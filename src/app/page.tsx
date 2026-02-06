@@ -2,153 +2,213 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[var(--bg-primary)] bg-grid-pattern bg-gradient-radial">
+    <div className="min-h-screen bg-white text-zinc-900 font-sans selection:bg-zinc-900 selection:text-white overflow-x-hidden">
       {/* Navigation */}
-      <header className="border-b border-[var(--border-subtle)] bg-[var(--bg-primary)]/80 backdrop-blur-xl">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[var(--accent-primary)] flex items-center justify-center">
-              <svg className="w-6 h-6 text-[var(--bg-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <span className="text-xl font-bold text-[var(--text-primary)]">AttendEase</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition font-medium"
-            >
-              Sign In
+      <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-zinc-100">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <Link href="/" className="text-xl font-medium tracking-tight">
+            AttendEase
+          </Link>
+          <div className="flex items-center gap-6 text-sm font-medium">
+            <Link href="/login" className="text-zinc-500 hover:text-zinc-900 transition-colors">
+              Sign in
             </Link>
             <Link
               href="/register"
-              className="px-4 py-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-hover)] text-[var(--bg-primary)] font-medium rounded-[var(--radius-md)] transition shadow-sm hover:shadow-lg hover:shadow-[var(--accent-glow)]"
+              className="bg-zinc-900 text-white px-4 py-2 rounded-full hover:bg-zinc-800 transition-all hover:scale-105 active:scale-95"
             >
               Get Started
             </Link>
           </div>
         </div>
-      </header>
+      </nav>
 
-      {/* Hero Section */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
-        <div className="text-center animate-fade-in opacity-0">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] rounded-full mb-8 text-sm font-medium">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-            Location-verified attendance in seconds
+      <main>
+        {/* Hero Section */}
+        <section className="pt-40 pb-20 md:pt-48 md:pb-32 px-6">
+          <div className="max-w-5xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-100 border border-zinc-200 text-xs font-medium text-zinc-600 mb-8 animate-fade-in-up">
+              <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+              v2.0 is now live
+            </div>
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-medium tracking-tighter leading-[0.95] mb-8 text-zinc-900">
+              Attendance tracking <br className="hidden md:block" />
+              <span className="text-zinc-400">reimagined.</span>
+            </h1>
+            <p className="text-lg md:text-xl text-zinc-500 max-w-2xl mx-auto mb-10 leading-relaxed">
+              The anti-cheat system for modern education. Verify student presence with precise location gating and real-time insights.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link
+                href="/register"
+                className="w-full sm:w-auto px-8 py-4 bg-zinc-900 text-white font-medium rounded-2xl text-lg hover:bg-zinc-800 transition-all shadow-xl shadow-zinc-200/50"
+              >
+                Start for free
+              </Link>
+              <Link
+                href="#features"
+                className="w-full sm:w-auto px-8 py-4 bg-white text-zinc-900 border border-zinc-200 font-medium rounded-2xl text-lg hover:bg-zinc-50 transition-all"
+              >
+                How it works
+              </Link>
+            </div>
           </div>
+        </section>
 
-          <h1 className="text-4xl md:text-6xl font-bold text-[var(--text-primary)] mb-6 leading-tight">
-            Attendance Made
-            <span className="text-[var(--accent-primary)]"> Simple</span>
-          </h1>
+        {/* Minimal Stats/Social Proof */}
+        <section className="py-12 border-y border-zinc-100 bg-zinc-50/50">
+          <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div>
+              <p className="text-3xl font-semibold tracking-tight text-zinc-900">10k+</p>
+              <p className="text-sm text-zinc-500 uppercase tracking-wide mt-1">Students</p>
+            </div>
+            <div>
+              <p className="text-3xl font-semibold tracking-tight text-zinc-900">500+</p>
+              <p className="text-sm text-zinc-500 uppercase tracking-wide mt-1">Courses</p>
+            </div>
+            <div>
+              <p className="text-3xl font-semibold tracking-tight text-zinc-900">99.9%</p>
+              <p className="text-sm text-zinc-500 uppercase tracking-wide mt-1">Uptime</p>
+            </div>
+            <div>
+              <p className="text-3xl font-semibold tracking-tight text-zinc-900">0%</p>
+              <p className="text-sm text-zinc-500 uppercase tracking-wide mt-1">Proxies</p>
+            </div>
+          </div>
+        </section>
 
-          <p className="text-lg md:text-xl text-[var(--text-secondary)] max-w-2xl mx-auto mb-10">
-            The anti-cheat attendance system for course representatives.
-            Verify student presence with location-based signing and real-time tracking.
-          </p>
+        {/* Features Section */}
+        <section id="features" className="py-32 px-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="mb-20">
+              <h2 className="text-3xl md:text-5xl font-medium tracking-tight mb-6">
+                Everything you need, <br />
+                <span className="text-zinc-400">nothing you don't.</span>
+              </h2>
+            </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="grid md:grid-cols-3 gap-8">
+              {/* Feature 1 */}
+              <div className="group p-8 rounded-3xl bg-zinc-50 border border-zinc-100 hover:border-zinc-200 transition-colors">
+                <div className="w-12 h-12 bg-white rounded-2xl border border-zinc-200 flex items-center justify-center mb-6 shadow-sm">
+                  <svg className="w-6 h-6 text-zinc-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-3 tracking-tight">Geo-Fencing</h3>
+                <p className="text-zinc-500 leading-relaxed">
+                  Set a physical radius for your class. Students must be inside the zone to mark themselves present.
+                </p>
+              </div>
+
+              {/* Feature 2 */}
+              <div className="group p-8 rounded-3xl bg-zinc-50 border border-zinc-100 hover:border-zinc-200 transition-colors">
+                <div className="w-12 h-12 bg-white rounded-2xl border border-zinc-200 flex items-center justify-center mb-6 shadow-sm">
+                  <svg className="w-6 h-6 text-zinc-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-3 tracking-tight">QR Instant Sign</h3>
+                <p className="text-zinc-500 leading-relaxed">
+                  Generate a unique QR code for every session. It refreshes dynamically to prevent photo-sharing.
+                </p>
+              </div>
+
+              {/* Feature 3 */}
+              <div className="group p-8 rounded-3xl bg-zinc-50 border border-zinc-100 hover:border-zinc-200 transition-colors">
+                <div className="w-12 h-12 bg-white rounded-2xl border border-zinc-200 flex items-center justify-center mb-6 shadow-sm">
+                  <svg className="w-6 h-6 text-zinc-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-3 tracking-tight">One-Click Export</h3>
+                <p className="text-zinc-500 leading-relaxed">
+                  Seamlessly export attendance data to CSV or PDF formats compatible with your university's portal.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-20 px-6">
+          <div className="max-w-4xl mx-auto bg-zinc-900 rounded-[2.5rem] p-12 md:p-20 text-center relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+              <svg width="100%" height="100%">
+                <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1"/>
+                </pattern>
+                <rect width="100%" height="100%" fill="url(#grid)" />
+              </svg>
+            </div>
+            
+            <h2 className="text-3xl md:text-5xl font-medium text-white mb-8 tracking-tight relative z-10">
+              Ready to modernize <br /> your classroom?
+            </h2>
             <Link
               href="/register"
-              className="px-8 py-4 bg-[var(--accent-primary)] hover:bg-[var(--accent-hover)] text-[var(--bg-primary)] font-semibold rounded-[var(--radius-md)] transition text-lg shadow-sm hover:shadow-xl hover:shadow-[var(--accent-glow)]"
+              className="inline-block bg-white text-zinc-900 px-10 py-4 rounded-full font-medium text-lg hover:bg-zinc-100 transition-transform hover:scale-105 active:scale-95 relative z-10"
             >
-              Start Free →
-            </Link>
-            <Link
-              href="/login"
-              className="px-8 py-4 bg-[var(--bg-elevated)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)] font-semibold rounded-[var(--radius-md)] transition text-lg border border-[var(--border-default)]"
-            >
-              Sign In
+              Get Started Now
             </Link>
           </div>
-        </div>
-
-        {/* Features Grid */}
-        <div className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in-up opacity-0 delay-200">
-          <div className="card-industrial p-6">
-            <div className="w-12 h-12 rounded-xl bg-[var(--accent-primary)]/10 flex items-center justify-center mb-4">
-              <svg className="w-6 h-6 text-[var(--accent-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">Location Verified</h3>
-            <p className="text-[var(--text-secondary)] text-sm">
-              Students must be physically present within the class radius to sign attendance. No proxies allowed.
-            </p>
-          </div>
-
-          <div className="card-industrial p-6">
-            <div className="w-12 h-12 rounded-xl bg-[var(--accent-primary)]/10 flex items-center justify-center mb-4">
-              <svg className="w-6 h-6 text-[var(--accent-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">Real-Time Tracking</h3>
-            <p className="text-[var(--text-secondary)] text-sm">
-              Watch attendance come in live. Share a QR code or link, and see students sign as they arrive.
-            </p>
-          </div>
-
-          <div className="card-industrial p-6">
-            <div className="w-12 h-12 rounded-xl bg-[var(--accent-primary)]/10 flex items-center justify-center mb-4">
-              <svg className="w-6 h-6 text-[var(--accent-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">Export Reports</h3>
-            <p className="text-[var(--text-secondary)] text-sm">
-              Download attendance records as CSV files. Perfect for submission to lecturers or department records.
-            </p>
-          </div>
-        </div>
-
-        {/* How It Works */}
-        <div className="mt-24 text-center animate-fade-in-up opacity-0 delay-300">
-          <h2 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-12">How It Works</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <div className="w-10 h-10 mx-auto rounded-full bg-[var(--accent-primary)] text-[var(--bg-primary)] font-bold flex items-center justify-center mb-4">1</div>
-              <h4 className="font-semibold text-[var(--text-primary)] mb-1">Create Session</h4>
-              <p className="text-[var(--text-muted)] text-sm">Select course and venue</p>
-            </div>
-            <div>
-              <div className="w-10 h-10 mx-auto rounded-full bg-[var(--accent-primary)] text-[var(--bg-primary)] font-bold flex items-center justify-center mb-4">2</div>
-              <h4 className="font-semibold text-[var(--text-primary)] mb-1">Share Link</h4>
-              <p className="text-[var(--text-muted)] text-sm">QR code or copy link</p>
-            </div>
-            <div>
-              <div className="w-10 h-10 mx-auto rounded-full bg-[var(--accent-primary)] text-[var(--bg-primary)] font-bold flex items-center justify-center mb-4">3</div>
-              <h4 className="font-semibold text-[var(--text-primary)] mb-1">Students Sign</h4>
-              <p className="text-[var(--text-muted)] text-sm">Location verified</p>
-            </div>
-            <div>
-              <div className="w-10 h-10 mx-auto rounded-full bg-[var(--accent-primary)] text-[var(--bg-primary)] font-bold flex items-center justify-center mb-4">4</div>
-              <h4 className="font-semibold text-[var(--text-primary)] mb-1">Export Data</h4>
-              <p className="text-[var(--text-muted)] text-sm">Download CSV reports</p>
-            </div>
-          </div>
-        </div>
+        </section>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-[var(--border-subtle)] mt-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-[var(--text-muted)] text-sm">
-            © {new Date().getFullYear()} AttendEase. Built for course reps.
-          </p>
-          <div className="flex items-center gap-6 text-sm">
-            <Link href="/login" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition">
-              Sign In
-            </Link>
-            <Link href="/register" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition">
-              Register
-            </Link>
+      {/* Bold & Unique Footer */}
+      <footer className="bg-zinc-900 pt-24 pb-12 px-6 border-t border-zinc-100 overflow-hidden relative">
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-20">
+            <div className="md:col-span-5">
+              <Link href="/" className="text-2xl font-medium tracking-tight block mb-6 text-white">
+                AttendEase
+              </Link>
+              <p className="text-zinc-400 max-w-sm leading-relaxed">
+                Building the future of academic integrity and classroom management. Simple, fast, and secure.
+              </p>
+            </div>
+            
+            <div className="md:col-span-2 md:col-start-7">
+              <h4 className="font-semibold mb-6 text-white">Product</h4>
+              <ul className="space-y-4 text-zinc-400 text-sm">
+                <li><Link href="#" className="hover:text-white transition-colors">Features</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors">Pricing</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors">Changelog</Link></li>
+              </ul>
+            </div>
+            
+            <div className="md:col-span-2">
+              <h4 className="font-semibold mb-6 text-white">Legal</h4>
+              <ul className="space-y-4 text-zinc-400 text-sm">
+                <li><Link href="#" className="hover:text-white transition-colors">Privacy</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors">Terms</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors">Security</Link></li>
+              </ul>
+            </div>
+            
+            <div className="md:col-span-2">
+              <h4 className="font-semibold mb-6 text-white">Socials</h4>
+              <ul className="space-y-4 text-zinc-400 text-sm">
+                <li><Link href="#" className="hover:text-white transition-colors">Twitter</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors">GitHub</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors">Discord</Link></li>
+              </ul>
+            </div>
           </div>
+
+          <div className="border-t border-zinc-800 pt-10 flex flex-col md:flex-row justify-between items-end gap-6">
+            <p className="text-zinc-500 text-sm">
+              © {new Date().getFullYear()} AttendEase Inc.
+            </p>
+          </div>
+        </div>
+        
+        {/* Massive Footer Text */}
+        <div className="absolute bottom-0 left-0 w-full text-center overflow-hidden pointer-events-none leading-none">
+            <span className="block text-[15vw] font-bold tracking-tighter text-zinc-800/50 select-none translate-y-[10%]">
+                ATTENDEASE
+            </span>
         </div>
       </footer>
     </div>
