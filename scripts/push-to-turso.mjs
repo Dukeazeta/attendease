@@ -16,7 +16,16 @@ async function push() {
 
   console.log("Generating SQL from Prisma schema...");
   // We use prisma migrate diff to get the SQL
-  const sql = execSync("npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script").toString();
+  // Prisma 7 requires a file: URL for sqlite datasource during CLI diff.
+  const sql = execSync(
+    "npx prisma migrate diff --from-empty --to-schema prisma/schema.prisma --script",
+    {
+      env: {
+        ...process.env,
+        DATABASE_URL: "file:./prisma/dev.db",
+      },
+    }
+  ).toString();
 
   const client = createClient({ url, authToken });
   
