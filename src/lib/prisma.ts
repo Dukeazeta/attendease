@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaLibSql } from "@prisma/adapter-libsql";
+import { PrismaLibSQL } from "@prisma/adapter-libsql";
 import { createClient } from "@libsql/client";
 
 const globalForPrisma = globalThis as unknown as {
@@ -16,9 +16,9 @@ const createPrismaClient = () => {
                 url,
                 authToken,
             });
-            // @ts-ignore - The adapter constructor type signature mismatch
-            const adapter = new PrismaLibSql(libsql);
-            // @ts-ignore - The adapter property is valid with driverAdapters preview feature
+            // @ts-ignore - Adapter type compatibility workaround
+            const adapter = new PrismaLibSQL(libsql);
+            // @ts-ignore - Adapter property is valid with driverAdapters preview feature
             return new PrismaClient({ adapter });
         }
     }
