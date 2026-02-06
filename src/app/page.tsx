@@ -25,29 +25,35 @@ export default function Home() {
 
       <main>
         {/* Hero Section */}
-        <section className="pt-40 pb-20 md:pt-48 md:pb-32 px-6">
-          <div className="max-w-5xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-100 border border-zinc-200 text-xs font-medium text-zinc-600 mb-8 animate-fade-in-up">
-              <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+        <section className="pt-40 pb-20 md:pt-48 md:pb-32 px-6 relative">
+           {/* Subtle background element */}
+           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-br from-zinc-100 to-transparent rounded-full blur-3xl -z-10 opacity-60"></div>
+
+          <div className="max-w-5xl mx-auto text-center relative z-10">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-zinc-200 text-xs font-semibold text-zinc-600 mb-8 animate-fade-in-up shadow-sm">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-zinc-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-zinc-900"></span>
+              </span>
               v2.0 is now live
             </div>
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-medium tracking-tighter leading-[0.95] mb-8 text-zinc-900">
               Attendance tracking <br className="hidden md:block" />
               <span className="text-zinc-400">reimagined.</span>
             </h1>
-            <p className="text-lg md:text-xl text-zinc-500 max-w-2xl mx-auto mb-10 leading-relaxed">
+            <p className="text-lg md:text-xl text-zinc-500 max-w-2xl mx-auto mb-10 leading-relaxed font-normal">
               The anti-cheat system for modern education. Verify student presence with precise location gating and real-time insights.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href="/register"
-                className="w-full sm:w-auto px-8 py-4 bg-zinc-900 text-white font-medium rounded-2xl text-lg hover:bg-zinc-800 transition-all shadow-xl shadow-zinc-200/50"
+                className="w-full sm:w-auto px-10 py-4 bg-zinc-900 text-white font-medium rounded-full text-lg hover:bg-black transition-all shadow-xl shadow-zinc-200/50 hover:scale-105 active:scale-95"
               >
                 Start for free
               </Link>
               <Link
                 href="#features"
-                className="w-full sm:w-auto px-8 py-4 bg-white text-zinc-900 border border-zinc-200 font-medium rounded-2xl text-lg hover:bg-zinc-50 transition-all"
+                className="w-full sm:w-auto px-10 py-4 bg-white text-zinc-900 border border-zinc-200 font-medium rounded-full text-lg hover:bg-zinc-50 transition-all hover:border-zinc-300"
               >
                 How it works
               </Link>
@@ -106,12 +112,12 @@ export default function Home() {
               <div className="group p-8 rounded-3xl bg-zinc-50 border border-zinc-100 hover:border-zinc-200 transition-colors">
                 <div className="w-12 h-12 bg-white rounded-2xl border border-zinc-200 flex items-center justify-center mb-6 shadow-sm">
                   <svg className="w-6 h-6 text-zinc-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold mb-3 tracking-tight">QR Instant Sign</h3>
+                <h3 className="text-xl font-semibold mb-3 tracking-tight">Unique Link Sign</h3>
                 <p className="text-zinc-500 leading-relaxed">
-                  Generate a unique QR code for every session. It refreshes dynamically to prevent photo-sharing.
+                  Generate a secure, time-bound link for every session. Students click to sign instantly—no scanning required.
                 </p>
               </div>
 

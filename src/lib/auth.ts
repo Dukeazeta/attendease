@@ -3,13 +3,12 @@ import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { compare } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { authConfig } from "./auth.config";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+    ...authConfig,
     adapter: PrismaAdapter(prisma),
     session: { strategy: "jwt" },
-    pages: {
-        signIn: "/login",
-    },
     providers: [
         Credentials({
             name: "credentials",
@@ -48,21 +47,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             },
         }),
     ],
-    callbacks: {
-        async session({ session, token }) {
-            if (token.sub) {
-                session.user.id = token.sub;
-            }
-            if (token.matricNumber) {
-                session.user.matricNumber = token.matricNumber as string;
-            }
-            return session;
-        },
-        async jwt({ token, user }) {
-            if (user) {
-                token.matricNumber = (user as { matricNumber?: string }).matricNumber;
-            }
-            return token;
-        },
-    },
 });
