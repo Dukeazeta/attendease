@@ -59,11 +59,12 @@ export default async function SessionDetailPage({
                 startTime: session.startTime.toISOString(),
                 endTime: session.endTime.toISOString(),
                 location: session.location,
-                attendances: session.attendances.map(a => ({
+            attendances: session.attendances.map(a => ({
                     id: a.id,
                     matricNumber: a.matricNumber,
                     studentName: a.studentName,
                     signedAt: a.signedAt.toISOString(),
+                    isManualEntry: a.isManualEntry,
                 })),
                 course: session.course
             }}

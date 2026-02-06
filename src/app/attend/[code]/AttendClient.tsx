@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import FingerprintJS from "@fingerprintjs/fingerprintjs";
 
 interface SessionData {
     id: string;
@@ -45,6 +46,63 @@ export default function AttendClient({ session }: { session: SessionData }) {
     const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
     const [distance, setDistance] = useState<number | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [deviceFingerprint, setDeviceFingerprint] = useState<string | null>(null);
+
+    // Generate hardware-focused fingerprint that's consistent across browsers on the same device
+    async function generateHardwareFingerprint(): Promise<string> {
+        try {
+            const fp = await FingerprintJS.load();
+            const result = await fp.get();
+            
+            // Get the components for hardware-focused signals
+            const c = result.components;
+            
+            // Extract hardware-focused attributes using type-safe access
+            // These signals are more consistent across browsers on the same device
+            const hardwareSignals = {
+                // Screen properties (hardware-bound)
+                screenResolution: "screenResolution" in c ? c.screenResolution : null,
+                colorDepth: "colorDepth" in c ? c.colorDepth : null,
+                
+                // Canvas fingerprint (GPU-based, mostly hardware-bound)
+                canvas: "canvas" in c ? c.canvas : null,
+                
+                // Audio fingerprint (hardware-bound)
+                audio: "audio" in c ? c.audio : null,
+                
+                // System info
+                timezone: "timezone" in c ? c.timezone : null,
+                platform: "platform" in c ? c.platform : null,
+                hardwareConcurrency: "hardwareConcurrency" in c ? c.hardwareConcurrency : null,
+                deviceMemory: "deviceMemory" in c ? c.deviceMemory : null,
+                
+                // WebGL info (if available via webGlBasics)
+                webGlBasics: "webGlBasics" in c ? c.webGlBasics : null,
+            };
+            
+            // Create a hash from these signals
+            const signalString = JSON.stringify(hardwareSignals);
+            const encoder = new TextEncoder();
+            const data = encoder.encode(signalString);
+            const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+            
+            // Also store a backup ID in localStorage for additional persistence
+            let storedId = localStorage.getItem("attendease_device_id");
+            if (!storedId) {
+                storedId = crypto.randomUUID();
+                localStorage.setItem("attendease_device_id", storedId);
+            }
+            
+            // Combine hardware hash with stored ID for robustness
+            const combined = `${hashHex.slice(0, 32)}_${storedId.slice(0, 8)}`;
+            return combined;
+        } catch (err) {
+            console.error("Fingerprint generation failed:", err);
+            throw new Error("Could not verify device. Please refresh and try again.");
+        }
+    }
 
     useEffect(() => {
         // Check if session is still active
@@ -60,6 +118,14 @@ export default function AttendClient({ session }: { session: SessionData }) {
             setStep("error");
             return;
         }
+
+        // Start device fingerprint generation
+        generateHardwareFingerprint()
+            .then(fp => setDeviceFingerprint(fp))
+            .catch(err => {
+                setError(err.message || "Could not verify device. Please refresh and try again.");
+                setStep("error");
+            });
 
         // Request location
         setStep("location");
@@ -105,6 +171,14 @@ export default function AttendClient({ session }: { session: SessionData }) {
         e.preventDefault();
         setIsSubmitting(true);
 
+        // Ensure fingerprint is ready
+        if (!deviceFingerprint) {
+            setError("Device verification failed. Please refresh the page and try again.");
+            setStep("error");
+            setIsSubmitting(false);
+            return;
+        }
+
         const formData = new FormData(e.currentTarget);
         const matricNumber = formData.get("matricNumber") as string;
         const studentName = formData.get("studentName") as string;
@@ -119,6 +193,7 @@ export default function AttendClient({ session }: { session: SessionData }) {
                     studentName,
                     latitude: coords?.lat,
                     longitude: coords?.lng,
+                    deviceFingerprint,
                 }),
             });
 

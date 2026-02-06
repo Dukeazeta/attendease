@@ -4,11 +4,19 @@ import { prisma } from "@/lib/prisma";
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { sessionId, matricNumber, studentName, latitude, longitude } = body;
+        const { sessionId, matricNumber, studentName, latitude, longitude, deviceFingerprint } = body;
 
         if (!sessionId || !matricNumber || !studentName) {
             return NextResponse.json(
                 { error: "Session ID, matric number, and name are required" },
+                { status: 400 }
+            );
+        }
+
+        // Require device fingerprint
+        if (!deviceFingerprint) {
+            return NextResponse.json(
+                { error: "Device verification failed. Please refresh the page and try again." },
                 { status: 400 }
             );
         }
@@ -76,9 +84,20 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        // Get device fingerprint from headers
-        const userAgent = request.headers.get("user-agent") || "";
-        const deviceFingerprint = Buffer.from(userAgent).toString("base64").slice(0, 50);
+        // Check if this device has already signed for this session
+        const existingDeviceAttendance = await prisma.attendance.findFirst({
+            where: {
+                sessionId,
+                deviceFingerprint,
+            },
+        });
+
+        if (existingDeviceAttendance) {
+            return NextResponse.json(
+                { error: "This device has already been used to sign attendance for this session. Each student must sign from their own device." },
+                { status: 403 }
+            );
+        }
 
         // Create attendance record
         const attendance = await prisma.attendance.create({

@@ -2,7 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
@@ -139,10 +140,12 @@ model Attendance {
   studentName       String
   signedLatitude    Float
   signedLongitude   Float
-  deviceFingerprint String?
+  deviceFingerprint String  // Hardware-based fingerprint to prevent same device signing for multiple students
+  isManualEntry     Boolean @default(false) // True if manually added by course rep
   signedAt          DateTime @default(now())
 
   session AttendanceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@unique([sessionId, matricNumber]) // One student can only sign once per session
+  @@unique([sessionId, deviceFingerprint]) // One device can only sign once per session
 }
