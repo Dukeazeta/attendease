@@ -18,7 +18,6 @@ const createPrismaClient = () => {
         url,
         authToken,
     });
-    // @ts-expect-error - Adapter property is valid with driverAdapters preview feature
     return new PrismaClient({ adapter });
 };
 
