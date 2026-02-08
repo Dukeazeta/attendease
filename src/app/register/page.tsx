@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -10,12 +11,14 @@ import { Loader2, ArrowLeft } from "lucide-react";
 export default function RegisterPage() {
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsLoading(true);
         setError(null);
+        setSuccess(null);
 
         const formData = new FormData(e.currentTarget);
         const name = formData.get("name") as string;
@@ -42,7 +45,20 @@ export default function RegisterPage() {
             if (!response.ok) {
                 setError(data.error || "Registration failed");
             } else {
-                router.push("/login?registered=true");
+                setSuccess("Account created. Signing you in...");
+                const result = await signIn("credentials", {
+                    email,
+                    password,
+                    redirect: false,
+                });
+
+                if (result?.error) {
+                    setSuccess(null);
+                    setError("Account created, but auto sign-in failed. Please sign in.");
+                } else {
+                    router.push("/dashboard");
+                    router.refresh();
+                }
             }
         } catch {
             setError("An error occurred. Please try again.");
@@ -88,6 +104,11 @@ export default function RegisterPage() {
                         {error && (
                             <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md border border-destructive/20">
                                 {error}
+                            </div>
+                        )}
+                        {success && (
+                            <div className="p-3 text-sm text-emerald-700 bg-emerald-500/10 rounded-md border border-emerald-500/20">
+                                {success}
                             </div>
                         )}
 
