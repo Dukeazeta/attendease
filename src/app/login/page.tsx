@@ -4,6 +4,9 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Loader2, ArrowLeft } from "lucide-react";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -40,80 +43,79 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)] bg-grid-pattern bg-gradient-radial px-4">
-            <div className="w-full max-w-md animate-fade-in opacity-0">
-                {/* Logo */}
-                <div className="flex items-center justify-center gap-3 mb-8">
-                    <div className="w-12 h-12 rounded-xl bg-[var(--accent-primary)] flex items-center justify-center">
-                        <svg className="w-7 h-7 text-[var(--bg-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <h1 className="text-2xl font-bold text-[var(--text-primary)]">AttendEase</h1>
-                </div>
+        <div className="min-h-screen w-full flex">
+            {/* Left Side - Form */}
+            <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 md:px-24 lg:px-32 bg-background relative">
+                <Link href="/" className="absolute top-10 left-8 md:left-24 flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors group">
+                    <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+                    Back to Home
+                </Link>
 
-                {/* Card */}
-                <div className="card-industrial p-8">
-                    <div className="text-center mb-8">
-                        <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2">Welcome Back</h2>
-                        <p className="text-[var(--text-secondary)]">Sign in to manage attendance</p>
+                <div className="space-y-6 max-w-sm w-full mx-auto">
+                    <div className="space-y-2">
+                        <h1 className="text-3xl md:text-4xl font-bold tracking-tighter">Welcome back</h1>
+                        <p className="text-muted-foreground">Enter your credentials to access your dashboard.</p>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-5">
+                    <form onSubmit={handleSubmit} className="space-y-4">
                         {error && (
-                            <div className="p-3 bg-[var(--error)]/10 border border-[var(--error)]/30 rounded-[var(--radius-md)] text-[var(--error)] text-sm text-center">
+                            <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md border border-destructive/20">
                                 {error}
                             </div>
                         )}
-
-                        <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-                                Email
-                            </label>
-                            <input
-                                type="email"
+                        <div className="space-y-4">
+                            <Input
                                 id="email"
                                 name="email"
+                                type="email"
+                                placeholder="name@example.com"
+                                label="Email"
                                 required
-                                className="w-full px-4 py-3 bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-[var(--radius-md)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition"
-                                placeholder="you@example.com"
                             />
-                        </div>
-
-                        <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-                                Password
-                            </label>
-                            <input
-                                type="password"
+                            <Input
                                 id="password"
                                 name="password"
-                                required
-                                className="w-full px-4 py-3 bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-[var(--radius-md)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition"
+                                type="password"
                                 placeholder="••••••••"
+                                label="Password"
+                                required
                             />
                         </div>
 
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="w-full py-3 px-4 bg-[var(--accent-primary)] text-[var(--bg-primary)] font-semibold rounded-[var(--radius-md)] hover:bg-[var(--accent-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)] transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-lg hover:shadow-[var(--accent-glow)]"
-                        >
-                            {isLoading ? "Signing in..." : "Sign In"}
-                        </button>
+                        <Button type="submit" className="w-full" size="lg" isLoading={isLoading}>
+                            Sign In
+                        </Button>
                     </form>
 
-                    <div className="mt-6 text-center">
-                        <p className="text-[var(--text-secondary)]">
+                    <div className="text-center text-sm">
+                        <p className="text-muted-foreground">
                             Don&apos;t have an account?{" "}
-                            <Link href="/register" className="text-[var(--accent-primary)] hover:text-[var(--accent-hover)] font-medium transition">
-                                Register
+                            <Link href="/register" className="font-semibold text-foreground hover:underline underline-offset-4">
+                                Create an account
                             </Link>
                         </p>
                     </div>
                 </div>
             </div>
+
+            {/* Right Side - Visual */}
+            <div className="hidden lg:flex w-1/2 bg-foreground text-background flex-col justify-center items-center p-12 relative overflow-hidden">
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-soft-light"></div>
+                <div className="relative z-10 max-w-lg text-center space-y-6">
+                    <div className="h-12 w-12 bg-background mx-auto rounded-full mb-8"></div>
+                    <blockquote className="text-3xl font-serif leading-tight">
+                        "Reliability is the precondition for trust."
+                    </blockquote>
+                    <p className="text-background/60 text-sm font-mono uppercase tracking-widest">
+                        AttendEase Secure Systems
+                    </p>
+                </div>
+
+                {/* Abstract Pattern */}
+                <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-background/10 rounded-full blur-3xl"></div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] border border-background/20 rounded-full dark:border-white/20"></div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] border border-background/10 rounded-full"></div>
+            </div>
         </div>
     );
 }
-

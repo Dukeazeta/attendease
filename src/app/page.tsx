@@ -1,217 +1,196 @@
+"use client";
+
 import Link from "next/link";
-
-const stats = [
-  { value: "10k+", label: "students" },
-  { value: "500+", label: "courses" },
-  { value: "99.9%", label: "uptime" },
-  { value: "< 3s", label: "avg sign-in" },
-];
-
-const features = [
-  {
-    title: "Geo-aware check-ins",
-    description:
-      "Approve attendance only when students are physically inside your configured location radius.",
-  },
-  {
-    title: "Device fingerprint guard",
-    description:
-      "Reduce proxy sign-ins by limiting one attendance record per device fingerprint per session.",
-  },
-  {
-    title: "Session ownership controls",
-    description:
-      "Only course reps who created a session can manage its records, links, and attendance edits.",
-  },
-];
-
-const steps = [
-  {
-    step: "01",
-    title: "Create your class structure",
-    description: "Set up courses and locations once, then reuse them across every attendance session.",
-  },
-  {
-    step: "02",
-    title: "Launch a session in seconds",
-    description:
-      "Generate a secure share code and link that students can open instantly on any modern device.",
-  },
-  {
-    step: "03",
-    title: "Review and export records",
-    description: "Monitor live attendance and export clean reports for downstream academic workflows.",
-  },
-];
-
-const faqs = [
-  {
-    question: "Do students need to install an app?",
-    answer:
-      "No. Students open a secure link and submit attendance from their browser—no downloads required.",
-  },
-  {
-    question: "Can I enforce location checks?",
-    answer:
-      "Yes. Sessions can enforce location radius checks to ensure sign-ins happen in approved spaces.",
-  },
-  {
-    question: "Can we still do manual corrections?",
-    answer:
-      "Absolutely. Course reps can add or adjust attendance entries when exceptional cases occur.",
-  },
-];
+import { motion, useScroll, useTransform } from "framer-motion";
+import { ArrowRight, Shield, MapPin, QrCode, Smartphone, CheckCircle, Zap } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
+  const { scrollYProgress } = useScroll();
+  const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
+
   return (
-    <div className="min-h-screen bg-white text-zinc-900 font-sans selection:bg-zinc-900 selection:text-white">
-      <nav className="sticky top-0 z-50 border-b border-zinc-100 bg-white/85 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <Link href="/" className="text-lg font-semibold tracking-tight">
-            AttendEase
+    <div className="min-h-screen bg-background text-foreground font-sans overflow-hidden selection:bg-foreground selection:text-background">
+      {/* Navbar */}
+      {/* Navbar - Brutalist */}
+      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 md:px-12 bg-background border-b-2 border-foreground">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 bg-foreground"></div>
+          <span className="text-xl font-bold tracking-tighter uppercase">Attendease.</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <Link href="/login">
+            <Button variant="ghost" className="hidden md:inline-flex hover:bg-foreground hover:text-background rounded-none border border-transparent hover:border-foreground transition-all duration-0">Sign In</Button>
           </Link>
-          <div className="flex items-center gap-5 text-sm font-medium">
-            <Link href="/login" className="text-zinc-500 transition-colors hover:text-zinc-900">
-              Sign in
-            </Link>
-            <Link
-              href="/register"
-              className="rounded-full bg-zinc-900 px-4 py-2 text-white transition-colors hover:bg-zinc-700"
-            >
-              Get started
-            </Link>
-          </div>
+          <Link href="/register">
+            <Button className="rounded-none border-2 border-foreground bg-foreground text-background hover:bg-background hover:text-foreground brutal-shadow transition-all duration-0 active:translate-x-1 active:translate-y-1 active:shadow-none">
+              Get Started
+            </Button>
+          </Link>
         </div>
       </nav>
 
-      <main>
-        <section className="px-6 pb-20 pt-24 md:pb-24 md:pt-32">
-          <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
-            <div>
-              <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-zinc-200 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-zinc-600">
-                Built for modern classrooms
-              </p>
-              <h1 className="text-4xl font-semibold leading-tight tracking-tight md:text-6xl">
-                Minimal attendance tooling,
-                <span className="block text-zinc-400">maximum trust in every record.</span>
-              </h1>
-              <p className="mt-6 max-w-xl text-lg leading-relaxed text-zinc-600">
-                AttendEase helps course reps run fast sign-ins with location validation, anti-proxy checks, and
-                clean exports.
-              </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Link
-                  href="/register"
-                  className="rounded-full bg-zinc-900 px-7 py-3 text-center font-medium text-white transition-all hover:-translate-y-0.5 hover:bg-black"
-                >
-                  Start for free
-                </Link>
-                <Link
-                  href="#how-it-works"
-                  className="rounded-full border border-zinc-200 px-7 py-3 text-center font-medium text-zinc-700 transition-colors hover:bg-zinc-50"
-                >
-                  Explore workflow
-                </Link>
-              </div>
+      {/* Hero Section - Swiss Brutalist */}
+      <section className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-32 pb-20 overflow-hidden border-b-2 border-foreground">
+        {/* Grid Background */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#000_1px,transparent_1px),linear-gradient(to_bottom,#000_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-10 pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto text-center z-10 space-y-12">
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "circOut" }}
+            className="flex flex-col items-center"
+          >
+            <div className="border-2 border-foreground px-4 py-1 mb-8 uppercase font-mono text-sm tracking-widest bg-background brutal-shadow-sm">
+              v2.0 System Online
             </div>
 
-            <div className="rounded-3xl border border-zinc-200 bg-zinc-50 p-8">
-              <p className="text-sm font-medium text-zinc-500">Session snapshot</p>
-              <div className="mt-6 space-y-4">
-                {[
-                  ["Course", "CSC 401 - Software Engineering"],
-                  ["Location", "Main Hall B"],
-                  ["Share Code", "A7K9P2"],
-                  ["Status", "Active · 52 signed in"],
-                ].map(([label, value]) => (
-                  <div key={label} className="rounded-2xl border border-zinc-200 bg-white p-4">
-                    <p className="text-xs uppercase tracking-wide text-zinc-500">{label}</p>
-                    <p className="mt-1 text-sm font-medium text-zinc-900">{value}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
+            <h1 className="text-7xl md:text-9xl lg:text-[10rem] font-black tracking-tighter leading-[0.85] text-foreground uppercase mix-blend-difference">
+              ATTENDANCE
+              <br />
+              <span className="outline-text text-transparent bg-clip-text stroke-foreground" style={{ WebkitTextStroke: "2px var(--foreground)" }}>
+                REDEFINED
+              </span>
+            </h1>
+          </motion.div>
 
-        <section className="border-y border-zinc-100 bg-zinc-50/70 px-6 py-10">
-          <div className="mx-auto grid max-w-6xl grid-cols-2 gap-6 text-center md:grid-cols-4">
-            {stats.map((item) => (
-              <div key={item.label}>
-                <p className="text-3xl font-semibold tracking-tight">{item.value}</p>
-                <p className="mt-1 text-xs uppercase tracking-[0.14em] text-zinc-500">{item.label}</p>
-              </div>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.8 }}
+            className="text-xl md:text-2xl font-mono text-foreground max-w-3xl mx-auto border-l-4 border-foreground pl-6 text-left"
+          >
+            The ultimate anti-cheat solution.
+            <br />
+            <span className="font-bold bg-foreground text-background px-1">GPS-LOCKED.</span> <span className="font-bold bg-foreground text-background px-1">QR-ENABLED.</span> <span className="font-bold bg-foreground text-background px-1">STRICTLY VERIFIED.</span>
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.8 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-8"
+          >
+            <Link href="/register">
+              <Button size="lg" className="h-16 px-10 text-xl font-bold rounded-none border-2 border-foreground bg-foreground text-background hover:bg-background hover:text-foreground brutal-shadow-lg transition-all duration-0 active:translate-x-1 active:translate-y-1 active:shadow-none uppercase tracking-tight">
+                Start Now
+              </Button>
+            </Link>
+            <Link href="#features">
+              <Button variant="outline" size="lg" className="h-16 px-10 text-xl font-bold rounded-none border-2 border-foreground bg-background text-foreground hover:bg-foreground hover:text-background brutal-shadow-lg transition-all duration-0 active:translate-x-1 active:translate-y-1 active:shadow-none uppercase tracking-tight">
+                Explore Features
+              </Button>
+            </Link>
+          </motion.div>
+        </div>
+
+        {/* Decorative Elements - Hard Geometric */}
+        <div className="absolute left-0 bottom-0 w-32 h-32 border-t-2 border-r-2 border-foreground hidden lg:block"></div>
+        <div className="absolute right-0 top-32 w-24 h-24 border-b-2 border-l-2 border-foreground hidden lg:block"></div>
+
+        <div className="absolute top-1/2 left-10 -translate-y-1/2 hidden xl:block">
+          <div className="flex flex-col gap-2">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="w-4 h-4 bg-foreground"></div>
             ))}
           </div>
-        </section>
+        </div>
 
-        <section id="features" className="px-6 py-20 md:py-24">
-          <div className="mx-auto max-w-6xl">
-            <div className="mb-10">
-              <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">Core protections, elegantly delivered.</h2>
-              <p className="mt-3 max-w-2xl text-zinc-600">
-                Keep the interface simple while preserving the safeguards that matter for attendance integrity.
-              </p>
-            </div>
+      </section>
 
-            <div className="grid gap-5 md:grid-cols-3">
-              {features.map((feature) => (
-                <article key={feature.title} className="rounded-3xl border border-zinc-200 p-6">
-                  <h3 className="text-lg font-semibold tracking-tight">{feature.title}</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-zinc-600">{feature.description}</p>
-                </article>
-              ))}
-            </div>
+      {/* Marquee / Social Proof - Minimal */}
+      <div className="border-y border-border py-8 bg-secondary/30">
+        <div className="container mx-auto px-6 text-center">
+          <p className="text-sm font-mono text-muted-foreground uppercase tracking-widest mb-6">Trusted by Departments at</p>
+          <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-opacity duration-500">
+            {/* Placeholders for logos, using text for now */}
+            {['ENGINEERING', 'SCIENCES', 'ARTS', 'LAW', 'MEDICINE'].map((dept) => (
+              <span key={dept} className="text-xl font-bold tracking-tighter">{dept}</span>
+            ))}
           </div>
-        </section>
+        </div>
+      </div>
 
-        <section id="how-it-works" className="bg-zinc-900 px-6 py-20 text-zinc-100 md:py-24">
-          <div className="mx-auto max-w-6xl">
-            <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">How it works</h2>
-            <div className="mt-10 grid gap-5 md:grid-cols-3">
-              {steps.map((item) => (
-                <article key={item.step} className="rounded-3xl border border-zinc-700 bg-zinc-800/60 p-6">
-                  <p className="text-xs font-semibold tracking-[0.16em] text-zinc-400">STEP {item.step}</p>
-                  <h3 className="mt-3 text-lg font-semibold">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-zinc-300">{item.description}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="px-6 py-20 md:py-24">
-          <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1fr_1.2fr]">
-            <div>
-              <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">Frequently asked questions</h2>
-              <p className="mt-3 text-zinc-600">Quick answers to help teams adopt AttendEase faster.</p>
-            </div>
-            <div className="space-y-4">
-              {faqs.map((faq) => (
-                <article key={faq.question} className="rounded-3xl border border-zinc-200 p-6">
-                  <h3 className="text-base font-semibold tracking-tight">{faq.question}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-zinc-600">{faq.answer}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="px-6 pb-24">
-          <div className="mx-auto max-w-5xl rounded-[2rem] bg-zinc-900 px-8 py-14 text-center text-white md:px-14">
-            <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">Ready to modernize attendance?</h2>
-            <p className="mx-auto mt-3 max-w-2xl text-zinc-300">
-              Launch a new session in minutes and keep your records clean, verifiable, and export-ready.
-            </p>
-            <Link
-              href="/register"
-              className="mt-8 inline-block rounded-full bg-white px-7 py-3 font-medium text-zinc-900 transition-colors hover:bg-zinc-200"
+      {/* Features Grid */}
+      <section id="features" className="py-32 px-6 container mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {[
+            {
+              icon: MapPin,
+              title: "Geo-Fencing",
+              desc: "Precise GPS verification ensures students are physically present in the lecture hall."
+            },
+            {
+              icon: QrCode,
+              title: "Dynamic QR",
+              desc: "Rotating QR codes prevent sharing. Expire in seconds, making remote scanning impossible."
+            },
+            {
+              icon: Smartphone,
+              title: "Device Lock",
+              desc: "One account, one device. Prevents proxy attendance through trusted device fingerprinting."
+            }
+          ].map((feature, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.2 }}
+              className="group p-8 rounded-3xl border border-border bg-card hover:bg-secondary/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
             >
-              Create your account
+              <div className="mb-6 inline-flex p-3 rounded-2xl bg-foreground/5 text-foreground group-hover:bg-foreground group-hover:text-background transition-colors duration-300">
+                <feature.icon className="h-8 w-8" />
+              </div>
+              <h3 className="text-2xl font-bold mb-3 tracking-tight">{feature.title}</h3>
+              <p className="text-muted-foreground leading-relaxed">{feature.desc}</p>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-32 bg-foreground text-background relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 mix-blend-soft-light"></div>
+        <div className="container mx-auto px-6 text-center relative z-10">
+          <motion.h2
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="text-5xl md:text-7xl font-bold tracking-tighter mb-8"
+          >
+            Ready to secure your class?
+          </motion.h2>
+          <p className="text-xl text-background/80 max-w-2xl mx-auto mb-12">
+            Join the department revolutionizing academic integrity.
+            Fast setup. Zero hardware required.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link href="/register">
+              <Button size="lg" className="h-16 px-10 text-lg rounded-full bg-background text-foreground hover:bg-background/90">
+                Get Started Now <Zap className="ml-2 h-5 w-5" />
+              </Button>
             </Link>
           </div>
-        </section>
-      </main>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-12 border-t border-border bg-background">
+        <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 bg-foreground rounded-full"></div>
+            <span className="text-lg font-bold tracking-tight">ATTENDEASE.</span>
+          </div>
+          <div className="flex gap-6 text-sm text-muted-foreground">
+            <a href="#" className="hover:text-foreground transition-colors">Privacy</a>
+            <a href="#" className="hover:text-foreground transition-colors">Terms</a>
+            <a href="#" className="hover:text-foreground transition-colors">Contact</a>
+          </div>
+          <p className="text-sm text-muted-foreground">© 2026 Code of Conduct.</p>
+        </div>
+      </footer>
     </div>
   );
 }
