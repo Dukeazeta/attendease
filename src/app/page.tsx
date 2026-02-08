@@ -99,96 +99,111 @@ export default function Home() {
 
       </section>
 
-      {/* Marquee / Social Proof - Minimal */}
-      <div className="border-y border-border py-8 bg-secondary/30">
-        <div className="container mx-auto px-6 text-center">
-          <p className="text-sm font-mono text-muted-foreground uppercase tracking-widest mb-6">Trusted by Departments at</p>
-          <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-opacity duration-500">
-            {/* Placeholders for logos, using text for now */}
+      {/* Marquee / Social Proof - Brutalist */}
+      <div className="border-y-2 border-foreground py-12 bg-background relative overflow-hidden">
+        <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
+           <div className="text-[20vw] font-black leading-none tracking-tighter mix-blend-difference">TRUST</div>
+        </div>
+        <div className="container mx-auto px-6 relative z-10">
+          <p className="text-xs font-mono font-bold text-foreground uppercase tracking-widest mb-8 text-center border-b border-foreground/20 pb-4 w-fit mx-auto">Trusted by Departments at</p>
+          <div className="flex flex-wrap justify-center gap-12 md:gap-24 opacity-80">
             {['ENGINEERING', 'SCIENCES', 'ARTS', 'LAW', 'MEDICINE'].map((dept) => (
-              <span key={dept} className="text-xl font-bold tracking-tighter">{dept}</span>
+              <span key={dept} className="text-2xl md:text-4xl font-black tracking-tighter uppercase relative group cursor-default">
+                  {dept}
+                  <span className="absolute -bottom-1 left-0 w-0 h-1 bg-foreground transition-all duration-300 group-hover:w-full"></span>
+              </span>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Features Grid */}
-      <section id="features" className="py-32 px-6 container mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {/* Features Grid - Brutalist */}
+      <section id="features" className="py-32 px-6 container mx-auto relative">
+         <div className="absolute left-0 top-0 text-9xl font-black text-foreground/5 -z-10 pointer-events-none rotate-90 origin-top-left translate-x-24 translate-y-24">FEATURES</div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-0 border-2 border-foreground bg-foreground">
           {[
             {
               icon: MapPin,
-              title: "Geo-Fencing",
-              desc: "Precise GPS verification ensures students are physically present in the lecture hall."
+              title: "GPS-LOCKED",
+              desc: "Precise coordinates required. No spoofing allowed."
             },
             {
               icon: QrCode,
-              title: "Dynamic QR",
-              desc: "Rotating QR codes prevent sharing. Expire in seconds, making remote scanning impossible."
+              title: "DYNAMIC QR",
+              desc: "Rotates every 5 seconds. Screenshot proof."
             },
             {
               icon: Smartphone,
-              title: "Device Lock",
-              desc: "One account, one device. Prevents proxy attendance through trusted device fingerprinting."
+              title: "DEVICE ID",
+              desc: "One student, one phone. Hardware-level binding."
             }
           ].map((feature, i) => (
-            <motion.div
+            <div
               key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.2 }}
-              className="group p-8 rounded-3xl border border-border bg-card hover:bg-secondary/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+              className="group p-12 bg-background border-b-2 md:border-b-0 md:border-r-2 border-foreground last:border-0 hover:bg-foreground hover:text-background transition-colors duration-200 flex flex-col justify-between h-full"
             >
-              <div className="mb-6 inline-flex p-3 rounded-2xl bg-foreground/5 text-foreground group-hover:bg-foreground group-hover:text-background transition-colors duration-300">
-                <feature.icon className="h-8 w-8" />
+              <div>
+                  <div className="mb-6 inline-flex p-4 border-2 border-foreground bg-background text-foreground group-hover:bg-background group-hover:text-foreground brutal-shadow-sm transition-all duration-200">
+                    <feature.icon className="h-8 w-8" />
+                  </div>
+                  <h3 className="text-3xl font-black mb-4 tracking-tighter uppercase">{feature.title}</h3>
+                  <p className="text-lg font-mono text-muted-foreground group-hover:text-background/80 leading-relaxed border-t-2 border-current pt-4">{feature.desc}</p>
               </div>
-              <h3 className="text-2xl font-bold mb-3 tracking-tight">{feature.title}</h3>
-              <p className="text-muted-foreground leading-relaxed">{feature.desc}</p>
-            </motion.div>
+              <div className="mt-8 text-right opacity-0 group-hover:opacity-100 transition-opacity duration-200 font-bold text-lg">
+                  // 0{i+1}
+              </div>
+            </div>
           ))}
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-32 bg-foreground text-background relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 mix-blend-soft-light"></div>
+      {/* CTA Section - Brutalist */}
+      <section className="py-32 bg-foreground text-background relative overflow-hidden border-y-2 border-background">
+        <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.05)_25%,rgba(255,255,255,0.05)_50%,transparent_50%,transparent_75%,rgba(255,255,255,0.05)_75%,rgba(255,255,255,0.05)_100%)] bg-[size:20px_20px] opacity-20"></div>
+        
         <div className="container mx-auto px-6 text-center relative z-10">
-          <motion.h2
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="text-5xl md:text-7xl font-bold tracking-tighter mb-8"
-          >
-            Ready to secure your class?
-          </motion.h2>
-          <p className="text-xl text-background/80 max-w-2xl mx-auto mb-12">
+          <h2 className="text-6xl md:text-8xl font-black tracking-tighter mb-8 uppercase leading-none">
+            SECURE YOUR <br/> CLASS NOW.
+          </h2>
+          <p className="text-xl md:text-2xl font-mono text-background/80 max-w-2xl mx-auto mb-12 border-2 border-background p-6">
             Join the department revolutionizing academic integrity.
-            Fast setup. Zero hardware required.
+            <br/>
+            NO HARDWARE. NO DELAYS. NO EXCUSES.
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <div className="flex flex-col sm:flex-row justify-center gap-6">
             <Link href="/register">
-              <Button size="lg" className="h-16 px-10 text-lg rounded-full bg-background text-foreground hover:bg-background/90">
-                Get Started Now <Zap className="ml-2 h-5 w-5" />
+              <Button size="lg" className="h-20 px-12 text-2xl font-bold rounded-none bg-background text-foreground hover:bg-background hover:scale-105 border-2 border-transparent transition-transform duration-200 brutal-shadow-lg uppercase">
+                Initialize System <Zap className="ml-2 h-6 w-6" />
               </Button>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-12 border-t border-border bg-background">
-        <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 bg-foreground rounded-full"></div>
-            <span className="text-lg font-bold tracking-tight">ATTENDEASE.</span>
+      {/* Footer - Brutalist */}
+      <footer className="py-12 bg-background border-t-4 border-foreground relative">
+        <div className="absolute top-0 left-10 w-4 h-4 bg-foreground -translate-y-1/2 rotate-45"></div>
+        
+        <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-end gap-6">
+          <div className="flex flex-col gap-2">
+             <div className="flex items-center gap-2 mb-2">
+                 <div className="w-8 h-8 bg-foreground"></div>
+                 <span className="text-2xl font-black tracking-tighter uppercase">ATTENDEASE.</span>
+             </div>
+             <p className="text-sm font-mono font-bold max-w-xs uppercase">
+                 The standard for verifyable academic presence.
+             </p>
           </div>
-          <div className="flex gap-6 text-sm text-muted-foreground">
-            <a href="#" className="hover:text-foreground transition-colors">Privacy</a>
-            <a href="#" className="hover:text-foreground transition-colors">Terms</a>
-            <a href="#" className="hover:text-foreground transition-colors">Contact</a>
+          
+          <div className="flex flex-col items-end gap-4">
+              <div className="flex gap-8 text-lg font-bold uppercase tracking-tight">
+                <a href="#" className="hover:underline decoration-2 underline-offset-4">Privacy</a>
+                <a href="#" className="hover:underline decoration-2 underline-offset-4">Terms</a>
+                <a href="#" className="hover:underline decoration-2 underline-offset-4">Contact</a>
+              </div>
+              <p className="text-xs font-mono text-muted-foreground uppercase">© 2026 Code of Conduct.</p>
           </div>
-          <p className="text-sm text-muted-foreground">© 2026 Code of Conduct.</p>
         </div>
       </footer>
     </div>
