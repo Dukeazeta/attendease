@@ -1,29 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { useAuthActions } from "@convex-dev/auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 export default function RegisterPage() {
     const router = useRouter();
+    const { signIn } = useAuthActions();
     const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsLoading(true);
         setError(null);
-        setSuccess(null);
 
         const formData = new FormData(e.currentTarget);
-        const name = formData.get("name") as string;
-        const email = formData.get("email") as string;
-        const matricNumber = formData.get("matricNumber") as string;
         const password = formData.get("password") as string;
         const confirmPassword = formData.get("confirmPassword") as string;
 
@@ -33,35 +29,15 @@ export default function RegisterPage() {
             return;
         }
 
+        // Set the flow type and remove confirmPassword
+        formData.set("flow", "signUp");
+        formData.delete("confirmPassword");
+
         try {
-            const response = await fetch("/api/auth/register", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, email, password, matricNumber }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                setError(data.error || "Registration failed");
-            } else {
-                setSuccess("Account created. Signing you in...");
-                const result = await signIn("credentials", {
-                    email,
-                    password,
-                    redirect: false,
-                });
-
-                if (result?.error) {
-                    setSuccess(null);
-                    setError("Account created, but auto sign-in failed. Please sign in.");
-                } else {
-                    router.push("/dashboard");
-                    router.refresh();
-                }
-            }
-        } catch {
-            setError("An error occurred. Please try again.");
+            await signIn("password", formData);
+            router.push("/dashboard");
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Registration failed. Please try again.");
         } finally {
             setIsLoading(false);
         }
@@ -104,11 +80,6 @@ export default function RegisterPage() {
                         {error && (
                             <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md border border-destructive/20">
                                 {error}
-                            </div>
-                        )}
-                        {success && (
-                            <div className="p-3 text-sm text-emerald-700 bg-emerald-500/10 rounded-md border border-emerald-500/20">
-                                {success}
                             </div>
                         )}
 

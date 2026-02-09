@@ -1,15 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { useAuthActions } from "@convex-dev/auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 export default function LoginPage() {
     const router = useRouter();
+    const { signIn } = useAuthActions();
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -19,24 +20,13 @@ export default function LoginPage() {
         setError(null);
 
         const formData = new FormData(e.currentTarget);
-        const email = formData.get("email") as string;
-        const password = formData.get("password") as string;
+        formData.set("flow", "signIn");
 
         try {
-            const result = await signIn("credentials", {
-                email,
-                password,
-                redirect: false,
-            });
-
-            if (result?.error) {
-                setError("Invalid email or password");
-            } else {
-                router.push("/dashboard");
-                router.refresh();
-            }
-        } catch {
-            setError("An error occurred. Please try again.");
+            await signIn("password", formData);
+            router.push("/dashboard");
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Invalid email or password");
         } finally {
             setIsLoading(false);
         }

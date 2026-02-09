@@ -1,24 +1,21 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
+"use client";
+
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import { Authenticated, Unauthenticated } from "convex/react";
+import { redirect } from "next/navigation";
 
-export default async function SessionsHistoryPage() {
-    const session = await auth();
+function SessionsContent() {
+    const sessions = useQuery(api.sessions.list);
 
-    if (!session?.user) {
-        redirect("/login");
+    if (sessions === undefined) {
+        return (
+            <div className="min-h-screen bg-[var(--bg-primary)] bg-grid-pattern bg-gradient-radial flex items-center justify-center">
+                <div className="w-8 h-8 border-4 border-[var(--accent-primary)] border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        );
     }
-
-    const sessions = await prisma.attendanceSession.findMany({
-        where: { course: { repId: session.user.id } },
-        include: {
-            course: true,
-            location: true,
-            _count: { select: { attendances: true } },
-        },
-        orderBy: { createdAt: "desc" },
-    });
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)] bg-grid-pattern bg-gradient-radial">
@@ -66,18 +63,18 @@ export default async function SessionsHistoryPage() {
                         </div>
                     ) : (
                         <div className="divide-y divide-[var(--border-subtle)]">
-                            {sessions.map((s) => (
+                            {sessions.map((s: any) => (
                                 <Link
-                                    key={s.id}
-                                    href={`/sessions/${s.id}`}
+                                    key={s._id}
+                                    href={`/sessions/${s._id}`}
                                     className="px-6 py-4 flex items-center justify-between hover:bg-[var(--bg-elevated)] transition-colors block"
                                 >
                                     <div>
                                         <h3 className="text-[var(--text-primary)] font-medium">
-                                            {s.course.courseCode} - {s.course.courseTitle}
+                                            {s.course?.courseCode} - {s.course?.courseTitle}
                                         </h3>
                                         <p className="text-[var(--text-secondary)] text-sm">
-                                            📍 {s.location.name} • <span className="text-[var(--accent-primary)]">{s._count.attendances} signed</span>
+                                            {s.location?.name} <span className="text-[var(--accent-primary)]">{s.attendanceCount} signed</span>
                                         </p>
                                         <p className="text-[var(--text-muted)] text-xs mt-1">
                                             {new Date(s.startTime).toLocaleDateString()} at{" "}
@@ -107,3 +104,20 @@ export default async function SessionsHistoryPage() {
     );
 }
 
+function RedirectToLogin() {
+    redirect("/login");
+    return null;
+}
+
+export default function SessionsHistoryPage() {
+    return (
+        <>
+            <Authenticated>
+                <SessionsContent />
+            </Authenticated>
+            <Unauthenticated>
+                <RedirectToLogin />
+            </Unauthenticated>
+        </>
+    );
+}

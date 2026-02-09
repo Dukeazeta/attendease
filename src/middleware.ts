@@ -1,41 +1,29 @@
-import NextAuth from "next-auth";
-import { authConfig } from "@/lib/auth.config";
-import { NextResponse } from "next/server";
+import {
+  convexAuthNextjsMiddleware,
+  createRouteMatcher,
+  nextjsMiddlewareRedirect,
+} from "@convex-dev/auth/nextjs/server";
 
-const { auth } = NextAuth(authConfig);
+const isAuthPage = createRouteMatcher(["/login", "/register"]);
+const isProtectedRoute = createRouteMatcher([
+  "/dashboard(.*)",
+  "/courses(.*)",
+  "/sessions(.*)",
+  "/locations(.*)",
+]);
 
-export default auth(async (req) => {
-    const session = req.auth;
-    const { pathname } = req.nextUrl;
-
-    // Protected routes
-    const protectedPaths = ["/dashboard", "/courses", "/sessions", "/locations"];
-    const isProtectedPath = protectedPaths.some((path) => pathname.startsWith(path));
-
-    // Auth routes (redirect if already logged in)
-    const authPaths = ["/login", "/register"];
-    const isAuthPath = authPaths.some((path) => pathname.startsWith(path));
-
-    if (isProtectedPath && !session) {
-        const loginUrl = new URL("/login", req.url);
-        loginUrl.searchParams.set("callbackUrl", pathname);
-        return NextResponse.redirect(loginUrl);
-    }
-
-    if (isAuthPath && session) {
-        return NextResponse.redirect(new URL("/dashboard", req.url));
-    }
-
-    return NextResponse.next();
+export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
+  // Redirect logged-in users away from auth pages
+  if (isAuthPage(request) && (await convexAuth.isAuthenticated())) {
+    return nextjsMiddlewareRedirect(request, "/dashboard");
+  }
+  // Redirect unauthenticated users to login
+  if (isProtectedRoute(request) && !(await convexAuth.isAuthenticated())) {
+    return nextjsMiddlewareRedirect(request, "/login");
+  }
 });
 
 export const config = {
-    matcher: [
-        "/dashboard/:path*",
-        "/courses/:path*",
-        "/sessions/:path*",
-        "/locations/:path*",
-        "/login",
-        "/register",
-    ],
+  // Run middleware on all routes except static assets
+  matcher: ["/((?!.*\\..*|_next).*)"],
 };

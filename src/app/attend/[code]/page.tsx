@@ -1,43 +1,399 @@
-import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
-import AttendClient from "./AttendClient";
+"use client";
 
-export default async function AttendPage({
+import { useState, useEffect, use } from "react";
+import FingerprintJS from "@fingerprintjs/fingerprintjs";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../../../../convex/_generated/api";
+
+// Haversine formula to calculate distance between two points
+function calculateDistance(
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number
+): number {
+    const R = 6371e3; // Earth's radius in meters
+    const ph1 = (lat1 * Math.PI) / 180;
+    const ph2 = (lat2 * Math.PI) / 180;
+    const dph = ((lat2 - lat1) * Math.PI) / 180;
+    const dla = ((lon2 - lon1) * Math.PI) / 180;
+
+    const a =
+        Math.sin(dph / 2) * Math.sin(dph / 2) +
+        Math.cos(ph1) * Math.cos(ph2) * Math.sin(dla / 2) * Math.sin(dla / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c; // Distance in meters
+}
+
+function AttendContent({ shareCode }: { shareCode: string }) {
+    const [step, setStep] = useState<"checking" | "location" | "form" | "success" | "error">("checking");
+    const [error, setError] = useState<string | null>(null);
+    const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+    const [distance, setDistance] = useState<number | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [deviceFingerprint, setDeviceFingerprint] = useState<string | null>(null);
+
+    // Convex queries and mutations
+    const session = useQuery(api.sessions.getByShareCode, { shareCode });
+    const submitAttendance = useMutation(api.attendance.submit);
+
+    // Generate hardware-focused fingerprint that's consistent across browsers on the same device
+    async function generateHardwareFingerprint(): Promise<string> {
+        try {
+            const fp = await FingerprintJS.load();
+            const result = await fp.get();
+            
+            // Get the components for hardware-focused signals
+            const c = result.components;
+            
+            // Extract hardware-focused attributes using type-safe access
+            // These signals are more consistent across browsers on the same device
+            const hardwareSignals = {
+                // Screen properties (hardware-bound)
+                screenResolution: "screenResolution" in c ? c.screenResolution : null,
+                colorDepth: "colorDepth" in c ? c.colorDepth : null,
+                
+                // Canvas fingerprint (GPU-based, mostly hardware-bound)
+                canvas: "canvas" in c ? c.canvas : null,
+                
+                // Audio fingerprint (hardware-bound)
+                audio: "audio" in c ? c.audio : null,
+                
+                // System info
+                timezone: "timezone" in c ? c.timezone : null,
+                platform: "platform" in c ? c.platform : null,
+                hardwareConcurrency: "hardwareConcurrency" in c ? c.hardwareConcurrency : null,
+                deviceMemory: "deviceMemory" in c ? c.deviceMemory : null,
+                
+                // WebGL info (if available via webGlBasics)
+                webGlBasics: "webGlBasics" in c ? c.webGlBasics : null,
+            };
+            
+            // Create a hash from these signals
+            const signalString = JSON.stringify(hardwareSignals);
+            const encoder = new TextEncoder();
+            const data = encoder.encode(signalString);
+            const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+            
+            // Also store a backup ID in localStorage for additional persistence
+            let storedId = localStorage.getItem("attendease_device_id");
+            if (!storedId) {
+                storedId = crypto.randomUUID();
+                localStorage.setItem("attendease_device_id", storedId);
+            }
+            
+            // Combine hardware hash with stored ID for robustness
+            const combined = `${hashHex.slice(0, 32)}_${storedId.slice(0, 8)}`;
+            return combined;
+        } catch (err) {
+            console.error("Fingerprint generation failed:", err);
+            throw new Error("Could not verify device. Please refresh and try again.");
+        }
+    }
+
+    useEffect(() => {
+        // Wait for session to load
+        if (session === undefined) return;
+
+        // Session not found
+        if (session === null) {
+            setError("Session not found.");
+            setStep("error");
+            return;
+        }
+
+        // Check if session is still active
+        if (!session.isActive) {
+            setError("This session has ended.");
+            setStep("error");
+            return;
+        }
+
+        // Check if session has expired
+        if (session.endTime < Date.now()) {
+            setError("This session has expired.");
+            setStep("error");
+            return;
+        }
+
+        // Start device fingerprint generation
+        generateHardwareFingerprint()
+            .then(fp => setDeviceFingerprint(fp))
+            .catch(err => {
+                setError(err.message || "Could not verify device. Please refresh and try again.");
+                setStep("error");
+            });
+
+        // Request location
+        setStep("location");
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                setCoords({ lat: latitude, lng: longitude });
+
+                // Calculate distance from class location
+                const dist = calculateDistance(
+                    latitude,
+                    longitude,
+                    session.location.latitude,
+                    session.location.longitude
+                );
+                setDistance(dist);
+
+                // Check if within radius
+                if (dist <= session.location.radiusMeters) {
+                    setStep("form");
+                } else {
+                    setError(
+                        `You are ${Math.round(dist)}m away from the class. You must be within ${session.location.radiusMeters}m to sign attendance.`
+                    );
+                    setStep("error");
+                }
+            },
+            (err) => {
+                if (err.code === err.PERMISSION_DENIED) {
+                    setError("Location permission denied. Please enable location access to sign attendance.");
+                } else if (err.code === err.POSITION_UNAVAILABLE) {
+                    setError("Location unavailable. Please try again.");
+                } else {
+                    setError("Could not get your location. Please enable GPS and try again.");
+                }
+                setStep("error");
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+    }, [session]);
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+
+        // Ensure fingerprint is ready
+        if (!deviceFingerprint) {
+            setError("Device verification failed. Please refresh the page and try again.");
+            setStep("error");
+            setIsSubmitting(false);
+            return;
+        }
+
+        if (!session) {
+            setError("Session not found.");
+            setStep("error");
+            setIsSubmitting(false);
+            return;
+        }
+
+        const formData = new FormData(e.currentTarget);
+        const matricNumber = formData.get("matricNumber") as string;
+        const studentName = formData.get("studentName") as string;
+
+        try {
+            await submitAttendance({
+                sessionId: session._id,
+                matricNumber,
+                studentName,
+                latitude: coords?.lat ?? 0,
+                longitude: coords?.lng ?? 0,
+                deviceFingerprint,
+            });
+            setStep("success");
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to sign attendance");
+            setStep("error");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    // Loading state
+    if (session === undefined) {
+        return (
+            <div className="min-h-screen bg-[var(--bg-primary)] bg-grid-pattern bg-gradient-radial flex items-center justify-center p-4">
+                <div className="w-full max-w-md">
+                    <div className="card-industrial p-8 text-center animate-fade-in-up opacity-0">
+                        <div className="w-12 h-12 border-4 border-[var(--accent-primary)] border-t-transparent rounded-full mx-auto mb-4 animate-spin"></div>
+                        <p className="text-[var(--text-primary)]">Loading session...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Session not found (error handled in useEffect)
+    if (session === null) {
+        return (
+            <div className="min-h-screen bg-[var(--bg-primary)] bg-grid-pattern bg-gradient-radial flex items-center justify-center p-4">
+                <div className="w-full max-w-md">
+                    <div className="card-industrial p-8 border-[var(--error)]/30 text-center animate-fade-in-up opacity-0">
+                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--error)]/10 flex items-center justify-center">
+                            <svg className="w-8 h-8 text-[var(--error)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">
+                            Session Not Found
+                        </h2>
+                        <p className="text-[var(--error)]">This attendance session does not exist or has been removed.</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-[var(--bg-primary)] bg-grid-pattern bg-gradient-radial flex items-center justify-center p-4">
+            <div className="w-full max-w-md">
+                {/* Course Info */}
+                <div className="text-center mb-8 animate-fade-in opacity-0">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] rounded-full mb-4">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        AttendEase
+                    </div>
+                    <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">
+                        {session.course.courseCode}
+                    </h1>
+                    <p className="text-[var(--text-secondary)]">{session.course.courseTitle}</p>
+                    <p className="text-[var(--text-muted)] text-sm mt-2 flex items-center justify-center gap-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        {session.location.name}
+                    </p>
+                </div>
+
+                {/* Checking State */}
+                {step === "checking" && (
+                    <div className="card-industrial p-8 text-center animate-fade-in-up opacity-0">
+                        <div className="w-12 h-12 border-4 border-[var(--accent-primary)] border-t-transparent rounded-full mx-auto mb-4 animate-spin"></div>
+                        <p className="text-[var(--text-primary)]">Checking session...</p>
+                    </div>
+                )}
+
+                {/* Getting Location */}
+                {step === "location" && (
+                    <div className="card-industrial p-8 text-center animate-fade-in-up opacity-0">
+                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--accent-primary)]/10 flex items-center justify-center animate-pulse">
+                            <svg className="w-8 h-8 text-[var(--accent-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </div>
+                        <p className="text-[var(--text-primary)] text-lg font-medium mb-2">Getting your location...</p>
+                        <p className="text-[var(--text-secondary)] text-sm">
+                            Please allow location access when prompted
+                        </p>
+                    </div>
+                )}
+
+                {/* Sign In Form */}
+                {step === "form" && (
+                    <div className="card-industrial p-8 animate-fade-in-up opacity-0">
+                        <div className="text-center mb-6">
+                            <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-[var(--success)]/10 flex items-center justify-center">
+                                <svg className="w-7 h-7 text-[var(--success)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <p className="text-[var(--success)] font-medium">Location verified!</p>
+                            <p className="text-[var(--text-muted)] text-sm">
+                                You are {Math.round(distance!)}m from the class location
+                            </p>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div>
+                                <label htmlFor="matricNumber" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                                    Matric Number <span className="text-[var(--error)]">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    id="matricNumber"
+                                    name="matricNumber"
+                                    required
+                                    className="w-full px-4 py-3 bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-[var(--radius-md)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] uppercase font-mono"
+                                    placeholder="CSC/2020/001"
+                                />
+                            </div>
+
+                            <div>
+                                <label htmlFor="studentName" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                                    Full Name <span className="text-[var(--error)]">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    id="studentName"
+                                    name="studentName"
+                                    required
+                                    className="w-full px-4 py-3 bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-[var(--radius-md)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+                                    placeholder="John Doe"
+                                />
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="w-full py-4 px-4 bg-[var(--accent-primary)] text-[var(--bg-primary)] font-semibold rounded-[var(--radius-md)] hover:bg-[var(--accent-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] transition disabled:opacity-50 disabled:cursor-not-allowed text-lg shadow-sm hover:shadow-lg hover:shadow-[var(--accent-glow)]"
+                            >
+                                {isSubmitting ? "Signing..." : "Sign Attendance"}
+                            </button>
+                        </form>
+                    </div>
+                )}
+
+                {/* Success State */}
+                {step === "success" && (
+                    <div className="card-industrial p-8 border-[var(--success)]/30 text-center animate-fade-in-up opacity-0">
+                        <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-[var(--success)]/10 flex items-center justify-center">
+                            <svg className="w-10 h-10 text-[var(--success)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2">
+                            Attendance Signed!
+                        </h2>
+                        <p className="text-[var(--text-secondary)]">
+                            Your attendance has been recorded successfully.
+                        </p>
+                    </div>
+                )}
+
+                {/* Error State */}
+                {step === "error" && (
+                    <div className="card-industrial p-8 border-[var(--error)]/30 text-center animate-fade-in-up opacity-0">
+                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--error)]/10 flex items-center justify-center">
+                            <svg className="w-8 h-8 text-[var(--error)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">
+                            Cannot Sign Attendance
+                        </h2>
+                        <p className="text-[var(--error)]">{error}</p>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="mt-6 px-6 py-3 bg-[var(--bg-elevated)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)] rounded-[var(--radius-md)] transition border border-[var(--border-default)]"
+                        >
+                            Try Again
+                        </button>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
+export default function AttendPage({
     params,
 }: {
     params: Promise<{ code: string }>;
 }) {
-    const { code } = await params;
-
-    const session = await prisma.attendanceSession.findUnique({
-        where: { shareCode: code },
-        include: {
-            course: true,
-            location: true,
-        },
-    });
-
-    if (!session) {
-        notFound();
-    }
-
-    return (
-        <AttendClient
-            session={{
-                id: session.id,
-                isActive: session.isActive,
-                endTime: session.endTime.toISOString(),
-                course: {
-                    courseCode: session.course.courseCode,
-                    courseTitle: session.course.courseTitle,
-                },
-                location: {
-                    name: session.location.name,
-                    latitude: session.location.latitude,
-                    longitude: session.location.longitude,
-                    radiusMeters: session.location.radiusMeters,
-                },
-            }}
-        />
-    );
+    const { code } = use(params);
+    
+    return <AttendContent shareCode={code} />;
 }

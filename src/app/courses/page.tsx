@@ -1,56 +1,52 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
+"use client";
+
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/../convex/_generated/api";
+import { Id } from "@/../convex/_generated/dataModel";
+import { useState } from "react";
 
-async function createCourse(formData: FormData) {
-    "use server";
-    const session = await auth();
-    if (!session?.user) return;
+export default function CoursesPage() {
+    const courses = useQuery(api.courses.list);
+    const createCourse = useMutation(api.courses.create);
+    const removeCourse = useMutation(api.courses.remove);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const courseCode = formData.get("courseCode") as string;
-    const courseTitle = formData.get("courseTitle") as string;
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        const formData = new FormData(e.currentTarget);
 
-    await prisma.course.create({
-        data: {
-            courseCode,
-            courseTitle,
-            repId: session.user.id,
-        },
-    });
+        try {
+            await createCourse({
+                courseCode: formData.get("courseCode") as string,
+                courseTitle: formData.get("courseTitle") as string,
+            });
+            (e.target as HTMLFormElement).reset();
+        } catch (err) {
+            alert(err instanceof Error ? err.message : "Failed to add course");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
-    revalidatePath("/courses");
-}
+    const handleDelete = async (id: Id<"courses">) => {
+        if (!confirm("Delete this course? All associated sessions will also be deleted.")) return;
+        try {
+            await removeCourse({ id });
+        } catch (err) {
+            alert(err instanceof Error ? err.message : "Failed to delete course");
+        }
+    };
 
-async function deleteCourse(formData: FormData) {
-    "use server";
-    const session = await auth();
-    if (!session?.user) return;
-
-    const courseId = formData.get("courseId") as string;
-
-    await prisma.course.delete({
-        where: { id: courseId, repId: session.user.id },
-    });
-
-    revalidatePath("/courses");
-}
-
-export default async function CoursesPage() {
-    const session = await auth();
-
-    if (!session?.user) {
-        redirect("/login");
+    // Loading state
+    if (courses === undefined) {
+        return (
+            <div className="min-h-screen bg-[var(--bg-primary)] bg-grid-pattern bg-gradient-radial flex items-center justify-center">
+                <div className="w-8 h-8 border-2 border-[var(--accent-primary)] border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        );
     }
-
-    const courses = await prisma.course.findMany({
-        where: { repId: session.user.id },
-        include: {
-            _count: { select: { sessions: true } },
-        },
-        orderBy: { createdAt: "desc" },
-    });
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)] bg-grid-pattern bg-gradient-radial">
@@ -75,7 +71,7 @@ export default async function CoursesPage() {
                 {/* Add Course Form */}
                 <div className="card-industrial p-6 mb-8 animate-fade-in opacity-0">
                     <h2 className="text-base font-semibold text-[var(--text-primary)] mb-4">Add New Course</h2>
-                    <form action={createCourse} className="flex flex-col sm:flex-row gap-4">
+                    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
                         <input
                             type="text"
                             name="courseCode"
@@ -92,9 +88,10 @@ export default async function CoursesPage() {
                         />
                         <button
                             type="submit"
-                            className="px-6 py-3 bg-[var(--accent-primary)] hover:bg-[var(--accent-hover)] text-[var(--bg-primary)] font-medium rounded-[var(--radius-md)] transition shadow-sm hover:shadow-lg hover:shadow-[var(--accent-glow)]"
+                            disabled={isSubmitting}
+                            className="px-6 py-3 bg-[var(--accent-primary)] hover:bg-[var(--accent-hover)] text-[var(--bg-primary)] font-medium rounded-[var(--radius-md)] transition shadow-sm hover:shadow-lg hover:shadow-[var(--accent-glow)] disabled:opacity-50"
                         >
-                            Add Course
+                            {isSubmitting ? "Adding..." : "Add Course"}
                         </button>
                     </form>
                 </div>
@@ -115,24 +112,21 @@ export default async function CoursesPage() {
                         </div>
                     ) : (
                         <div className="divide-y divide-[var(--border-subtle)]">
-                            {courses.map((course) => (
-                                <div key={course.id} className="px-6 py-4 flex items-center justify-between hover:bg-[var(--bg-elevated)] transition-colors">
+                            {courses.map((course: any) => (
+                                <div key={course._id} className="px-6 py-4 flex items-center justify-between hover:bg-[var(--bg-elevated)] transition-colors">
                                     <div>
                                         <h3 className="text-[var(--text-primary)] font-medium">{course.courseCode}</h3>
                                         <p className="text-[var(--text-secondary)] text-sm">{course.courseTitle}</p>
                                         <p className="text-[var(--text-muted)] text-xs mt-1">
-                                            {course._count.sessions} session(s)
+                                            {course.sessionCount} session(s)
                                         </p>
                                     </div>
-                                    <form action={deleteCourse}>
-                                        <input type="hidden" name="courseId" value={course.id} />
-                                        <button
-                                            type="submit"
-                                            className="px-4 py-2 bg-[var(--error)]/10 hover:bg-[var(--error)]/20 text-[var(--error)] text-sm rounded-[var(--radius-md)] transition font-medium"
-                                        >
-                                            Delete
-                                        </button>
-                                    </form>
+                                    <button
+                                        onClick={() => handleDelete(course._id)}
+                                        className="px-4 py-2 bg-[var(--error)]/10 hover:bg-[var(--error)]/20 text-[var(--error)] text-sm rounded-[var(--radius-md)] transition font-medium"
+                                    >
+                                        Delete
+                                    </button>
                                 </div>
                             ))}
                         </div>
@@ -142,4 +136,3 @@ export default async function CoursesPage() {
         </div>
     );
 }
-

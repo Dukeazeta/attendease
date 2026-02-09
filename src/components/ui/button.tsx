@@ -9,7 +9,7 @@ function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends HTMLMotionProps<"button"> {
     variant?: "primary" | "secondary" | "outline" | "ghost" | "link";
     size?: "default" | "sm" | "lg" | "icon";
     isLoading?: boolean;
@@ -50,7 +50,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
                 {isLoading && (
                     <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                 )}
-                {children}
+                {children as React.ReactNode}
             </motion.button>
         );
     }

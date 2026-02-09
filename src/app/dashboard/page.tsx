@@ -1,43 +1,37 @@
-import { redirect } from "next/navigation";
-import { auth, signOut } from "@/lib/auth";
+"use client";
+
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { useQuery } from "convex/react";
+import { useAuthActions } from "@convex-dev/auth/react";
+import { api } from "@/../convex/_generated/api";
+import { useRouter } from "next/navigation";
 
-export default async function DashboardPage() {
-    const session = await auth();
+export default function DashboardPage() {
+    const router = useRouter();
+    const { signOut } = useAuthActions();
+    const dashboardData = useQuery(api.users.dashboardStats);
 
-    if (!session?.user) {
-        redirect("/login");
+    const handleSignOut = async () => {
+        await signOut();
+        router.push("/login");
+    };
+
+    // Loading state
+    if (dashboardData === undefined) {
+        return (
+            <div className="min-h-screen bg-[var(--bg-primary)] bg-grid-pattern bg-gradient-radial flex items-center justify-center">
+                <div className="w-8 h-8 border-2 border-[var(--accent-primary)] border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        );
     }
 
-    // Fetch user's courses and active sessions
-    const [courses, activeSessions] = await Promise.all([
-        prisma.course.findMany({
-            where: { repId: session.user.id },
-            include: {
-                sessions: {
-                    where: { isActive: true },
-                    include: { location: true, _count: { select: { attendances: true } } },
-                },
-            },
-        }),
-        prisma.attendanceSession.findMany({
-            where: {
-                course: { repId: session.user.id },
-                isActive: true,
-            },
-            include: {
-                course: true,
-                location: true,
-                _count: { select: { attendances: true } },
-            },
-        }),
-    ]);
+    // Not authenticated
+    if (dashboardData === null) {
+        router.push("/login");
+        return null;
+    }
 
-    const totalStudentsSigned = activeSessions.reduce(
-        (acc, s) => acc + s._count.attendances,
-        0
-    );
+    const { user, courseCount, activeSessionCount, totalStudentsSigned, activeSessions } = dashboardData;
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)] bg-grid-pattern bg-gradient-radial">
@@ -53,22 +47,15 @@ export default async function DashboardPage() {
                         </div>
                         <div>
                             <h1 className="text-lg font-bold text-[var(--text-primary)] tracking-tight">AttendEase</h1>
-                            <p className="text-[var(--text-muted)] text-xs">{session.user.name}</p>
+                            <p className="text-[var(--text-muted)] text-xs">{user.name}</p>
                         </div>
                     </div>
-                    <form
-                        action={async () => {
-                            "use server";
-                            await signOut({ redirectTo: "/login" });
-                        }}
+                    <button
+                        onClick={handleSignOut}
+                        className="px-3 py-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] rounded-md transition-colors"
                     >
-                        <button
-                            type="submit"
-                            className="px-3 py-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] rounded-md transition-colors"
-                        >
-                            Sign Out
-                        </button>
-                    </form>
+                        Sign Out
+                    </button>
                 </div>
             </header>
 
@@ -83,16 +70,16 @@ export default async function DashboardPage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                             </svg>
                         </div>
-                        <p className="data-display text-4xl text-[var(--text-primary)]">{courses.length}</p>
+                        <p className="data-display text-4xl text-[var(--text-primary)]">{courseCount}</p>
                     </div>
 
                     {/* Active Sessions */}
                     <div className="card-industrial p-6 animate-fade-in opacity-0 delay-100">
                         <div className="flex items-center justify-between mb-3">
                             <h3 className="text-[var(--text-muted)] text-sm font-medium uppercase tracking-wide">Active</h3>
-                            {activeSessions.length > 0 && <span className="live-indicator">Live</span>}
+                            {activeSessionCount > 0 && <span className="live-indicator">Live</span>}
                         </div>
-                        <p className="data-display text-4xl text-[var(--success)]">{activeSessions.length}</p>
+                        <p className="data-display text-4xl text-[var(--success)]">{activeSessionCount}</p>
                     </div>
 
                     {/* Students Signed Today */}
@@ -178,7 +165,7 @@ export default async function DashboardPage() {
                         <div className="divide-y divide-[var(--border-subtle)]">
                             {activeSessions.map((sess, idx) => (
                                 <div
-                                    key={sess.id}
+                                    key={sess._id}
                                     className="px-6 py-4 flex items-center justify-between hover:bg-[var(--bg-elevated)] transition-colors"
                                     style={{ animationDelay: `${500 + idx * 100}ms` }}
                                 >
@@ -186,20 +173,20 @@ export default async function DashboardPage() {
                                         <div className="w-2 h-2 rounded-full bg-[var(--success)] animate-pulse-dot" />
                                         <div>
                                             <h3 className="text-[var(--text-primary)] font-medium">
-                                                {sess.course.courseCode}
+                                                {sess.course?.courseCode}
                                             </h3>
                                             <p className="text-[var(--text-muted)] text-sm">
-                                                {sess.location.name}
+                                                {sess.location?.name}
                                             </p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-4">
                                         <div className="text-right">
-                                            <p className="data-display text-lg text-[var(--text-primary)]">{sess._count.attendances}</p>
+                                            <p className="data-display text-lg text-[var(--text-primary)]">{sess.attendanceCount}</p>
                                             <p className="text-[var(--text-muted)] text-xs">signed</p>
                                         </div>
                                         <Link
-                                            href={`/sessions/${sess.id}`}
+                                            href={`/sessions/${sess._id}`}
                                             className="px-3 py-1.5 text-sm text-[var(--accent-primary)] hover:bg-[var(--accent-subtle)] rounded-md transition-colors font-medium"
                                         >
                                             View →
