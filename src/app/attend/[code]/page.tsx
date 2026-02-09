@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import AttendClient from "./AttendClient";
 
 export default async function AttendPage({
@@ -9,7 +9,7 @@ export default async function AttendPage({
 }) {
     const { code } = await params;
 
-    const session = await prisma.attendanceSession.findUnique({
+    const session = await db.attendanceSession.findUnique({
         where: { shareCode: code },
         include: {
             course: true,
