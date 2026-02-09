@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
 async function createCourse(formData: FormData) {
@@ -12,7 +12,7 @@ async function createCourse(formData: FormData) {
     const courseCode = formData.get("courseCode") as string;
     const courseTitle = formData.get("courseTitle") as string;
 
-    await prisma.course.create({
+    await db.course.create({
         data: {
             courseCode,
             courseTitle,
@@ -30,7 +30,7 @@ async function deleteCourse(formData: FormData) {
 
     const courseId = formData.get("courseId") as string;
 
-    await prisma.course.delete({
+    await db.course.delete({
         where: { id: courseId, repId: session.user.id },
     });
 
@@ -44,7 +44,7 @@ export default async function CoursesPage() {
         redirect("/login");
     }
 
-    const courses = await prisma.course.findMany({
+    const courses = await db.course.findMany({
         where: { repId: session.user.id },
         include: {
             _count: { select: { sessions: true } },

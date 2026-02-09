@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 
 export async function POST(request: NextRequest) {
     const session = await auth();
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const location = await prisma.location.create({
+        const location = await db.location.create({
             data: {
                 name,
                 building,
@@ -45,7 +45,7 @@ export async function GET() {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const locations = await prisma.location.findMany({
+    const locations = await db.location.findMany({
         orderBy: { name: "asc" },
     });
 
