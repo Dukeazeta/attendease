@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 
 export default async function SessionsHistoryPage() {
     const session = await auth();
@@ -10,7 +10,7 @@ export default async function SessionsHistoryPage() {
         redirect("/login");
     }
 
-    const sessions = await prisma.attendanceSession.findMany({
+    const sessions = await db.attendanceSession.findMany({
         where: { course: { repId: session.user.id } },
         include: {
             course: true,
