@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import NewSessionClient from "./NewSessionClient";
 
 export default async function NewSessionPage() {
@@ -11,11 +11,11 @@ export default async function NewSessionPage() {
     }
 
     const [courses, locations] = await Promise.all([
-        prisma.course.findMany({
+        db.course.findMany({
             where: { repId: session.user.id },
             orderBy: { courseCode: "asc" },
         }),
-        prisma.location.findMany({
+        db.location.findMany({
             orderBy: { name: "asc" },
         }),
     ]);

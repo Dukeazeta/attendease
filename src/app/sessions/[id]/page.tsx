@@ -1,13 +1,13 @@
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import SessionClient from "./SessionClient";
 
 async function endSession(sessionId: string) {
     "use server";
 
-    await prisma.attendanceSession.update({
+    await db.attendanceSession.update({
         where: { id: sessionId },
         data: { isActive: false },
     });
@@ -28,7 +28,7 @@ export default async function SessionDetailPage({
 
     const { id } = await params;
 
-    const session = await prisma.attendanceSession.findUnique({
+    const session = await db.attendanceSession.findUnique({
         where: { id },
         include: {
             course: true,
@@ -59,7 +59,7 @@ export default async function SessionDetailPage({
                 startTime: session.startTime.toISOString(),
                 endTime: session.endTime.toISOString(),
                 location: session.location,
-            attendances: session.attendances.map(a => ({
+            attendances: session.attendances.map((a: any) => ({
                     id: a.id,
                     matricNumber: a.matricNumber,
                     studentName: a.studentName,

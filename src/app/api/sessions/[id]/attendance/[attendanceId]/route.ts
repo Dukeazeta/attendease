@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 
 // PATCH /api/sessions/[id]/attendance/[attendanceId] - Edit attendance record
 export async function PATCH(
@@ -28,7 +28,7 @@ export async function PATCH(
         }
 
         // Get the attendance record with session and course info
-        const attendance = await prisma.attendance.findUnique({
+        const attendance = await db.attendance.findUnique({
             where: { id: attendanceId },
             include: {
                 session: {
@@ -66,7 +66,7 @@ export async function PATCH(
 
         // If updating matric number, check for duplicates
         if (matricNumber && matricNumber.toUpperCase() !== attendance.matricNumber) {
-            const existingAttendance = await prisma.attendance.findUnique({
+            const existingAttendance = await db.attendance.findUnique({
                 where: {
                     sessionId_matricNumber: {
                         sessionId,
@@ -84,7 +84,7 @@ export async function PATCH(
         }
 
         // Update the attendance record
-        const updatedAttendance = await prisma.attendance.update({
+        const updatedAttendance = await db.attendance.update({
             where: { id: attendanceId },
             data: {
                 ...(matricNumber && { matricNumber: matricNumber.toUpperCase() }),
@@ -122,7 +122,7 @@ export async function DELETE(
         const { id: sessionId, attendanceId } = await params;
 
         // Get the attendance record with session and course info
-        const attendance = await prisma.attendance.findUnique({
+        const attendance = await db.attendance.findUnique({
             where: { id: attendanceId },
             include: {
                 session: {
@@ -159,7 +159,7 @@ export async function DELETE(
         }
 
         // Delete the attendance record
-        await prisma.attendance.delete({
+        await db.attendance.delete({
             where: { id: attendanceId }
         });
 

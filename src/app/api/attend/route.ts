@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 
 export async function POST(request: NextRequest) {
     try {
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Get the session with location
-        const session = await prisma.attendanceSession.findUnique({
+        const session = await db.attendanceSession.findUnique({
             where: { id: sessionId },
             include: { location: true },
         });
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Check if student has already signed
-        const existingAttendance = await prisma.attendance.findUnique({
+        const existingAttendance = await db.attendance.findUnique({
             where: {
                 sessionId_matricNumber: {
                     sessionId,
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Check if this device has already signed for this session
-        const existingDeviceAttendance = await prisma.attendance.findFirst({
+        const existingDeviceAttendance = await db.attendance.findFirst({
             where: {
                 sessionId,
                 deviceFingerprint,
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Create attendance record
-        const attendance = await prisma.attendance.create({
+        const attendance = await db.attendance.create({
             data: {
                 sessionId,
                 matricNumber: matricNumber.toUpperCase(),
