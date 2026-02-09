@@ -1,13 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Shield, MapPin, QrCode, Smartphone, CheckCircle, Zap } from "lucide-react";
+import { motion } from "framer-motion";
+import { MapPin, QrCode, Smartphone, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
-  const { scrollYProgress } = useScroll();
-  const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans overflow-hidden selection:bg-foreground selection:text-background">
@@ -151,7 +149,7 @@ export default function Home() {
                   <p className="text-lg font-mono text-muted-foreground group-hover:text-background/80 leading-relaxed border-t-2 border-current pt-4">{feature.desc}</p>
               </div>
               <div className="mt-8 text-right opacity-0 group-hover:opacity-100 transition-opacity duration-200 font-bold text-lg">
-                  // 0{i+1}
+                  {"// "}{String(i + 1).padStart(2, "0")}
               </div>
             </div>
           ))}

@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { hash } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import {
+  convexEnabled,
+  createConvexUser,
+  getConvexUserByEmailOrMatricNumber,
+} from "@/lib/convex-auth";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { name, email, password, matricNumber } = body;
 
-    // Validate required fields
     if (!name || !email || !password) {
       return NextResponse.json(
         { error: "Name, email, and password are required" },
@@ -15,12 +19,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user already exists
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [{ email }, ...(matricNumber ? [{ matricNumber }] : [])],
-      },
-    });
+    const existingUser = convexEnabled()
+      ? await getConvexUserByEmailOrMatricNumber(email, matricNumber)
+      : await prisma.user.findFirst({
+          where: {
+            OR: [{ email }, ...(matricNumber ? [{ matricNumber }] : [])],
+          },
+        });
 
     if (existingUser) {
       return NextResponse.json(
@@ -29,23 +34,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Hash password
     const hashedPassword = await hash(password, 12);
 
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        matricNumber,
-      },
-    });
+    const user = convexEnabled()
+      ? await createConvexUser({
+          name,
+          email,
+          password: hashedPassword,
+          matricNumber,
+        })
+      : await prisma.user.create({
+          data: {
+            name,
+            email,
+            password: hashedPassword,
+            matricNumber,
+          },
+        });
 
     return NextResponse.json(
       {
         message: "User created successfully",
-        user: { id: user.id, name: user.name, email: user.email },
+        user: {
+          id: user ? ("id" in user ? user.id : user._id) : null,
+          name: user?.name,
+          email: user?.email,
+        },
       },
       { status: 201 }
     );

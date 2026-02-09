@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -104,7 +104,7 @@ export default function LoginPage() {
                 <div className="relative z-10 max-w-lg text-center space-y-6">
                     <div className="h-12 w-12 bg-background mx-auto rounded-full mb-8"></div>
                     <blockquote className="text-3xl font-serif leading-tight">
-                        "Reliability is the precondition for trust."
+                        &quot;Reliability is the precondition for trust.&quot;
                     </blockquote>
                     <p className="text-background/60 text-sm font-mono uppercase tracking-widest">
                         AttendEase Secure Systems
