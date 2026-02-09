@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/lib/auth";
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 
 export default async function DashboardPage() {
     const session = await auth();
@@ -12,7 +12,7 @@ export default async function DashboardPage() {
 
     // Fetch user's courses and active sessions
     const [courses, activeSessions] = await Promise.all([
-        prisma.course.findMany({
+        db.course.findMany({
             where: { repId: session.user.id },
             include: {
                 sessions: {
@@ -21,7 +21,7 @@ export default async function DashboardPage() {
                 },
             },
         }),
-        prisma.attendanceSession.findMany({
+        db.attendanceSession.findMany({
             where: {
                 course: { repId: session.user.id },
                 isActive: true,

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 
 // POST /api/sessions/[id]/attendance - Manual add attendance (course rep only)
 export async function POST(
@@ -28,7 +28,7 @@ export async function POST(
         }
 
         // Get the attendance session and verify ownership
-        const attendanceSession = await prisma.attendanceSession.findUnique({
+        const attendanceSession = await db.attendanceSession.findUnique({
             where: { id: sessionId },
             include: {
                 course: {
@@ -53,7 +53,7 @@ export async function POST(
         }
 
         // Check if matric number already exists in this session
-        const existingAttendance = await prisma.attendance.findUnique({
+        const existingAttendance = await db.attendance.findUnique({
             where: {
                 sessionId_matricNumber: {
                     sessionId,
@@ -72,7 +72,7 @@ export async function POST(
         // Create manual attendance entry with unique fingerprint
         const manualFingerprint = `MANUAL_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
         
-        const attendance = await prisma.attendance.create({
+        const attendance = await db.attendance.create({
             data: {
                 sessionId,
                 matricNumber: matricNumber.toUpperCase(),

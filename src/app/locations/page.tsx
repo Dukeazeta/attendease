@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import LocationsClient from "./LocationsClient";
 
 export default async function LocationsPage() {
@@ -10,7 +10,7 @@ export default async function LocationsPage() {
         redirect("/login");
     }
 
-    const locations = await prisma.location.findMany({
+    const locations = await db.location.findMany({
         orderBy: { createdAt: "desc" },
     });
 

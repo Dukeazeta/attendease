@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { nanoid } from "nanoid";
 
 // Generate short, unique share code
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Verify the course belongs to this user
-        const course = await prisma.course.findFirst({
+        const course = await db.course.findFirst({
             where: { id: courseId, repId: session.user.id },
         });
 
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Create the session
-        const attendanceSession = await prisma.attendanceSession.create({
+        const attendanceSession = await db.attendanceSession.create({
             data: {
                 courseId,
                 locationId,
@@ -64,7 +64,7 @@ export async function GET() {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const sessions = await prisma.attendanceSession.findMany({
+    const sessions = await db.attendanceSession.findMany({
         where: { course: { repId: session.user.id } },
         include: {
             course: true,
