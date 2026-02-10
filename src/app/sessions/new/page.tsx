@@ -63,7 +63,7 @@ function NewSessionContent() {
                 <h2 className="text-headline-3 text-foreground mb-3">{title}</h2>
                 <p className="text-caption text-muted-foreground mb-8 leading-relaxed">{description}</p>
                 <Link href={href}>
-                    <Button className="w-full h-12 rounded-[var(--radius-sm)]">{actionLabel}</Button>
+                    <Button className="w-full h-12">{actionLabel}</Button>
                 </Link>
             </motion.div>
         </div>
@@ -122,7 +122,7 @@ function NewSessionContent() {
                     <div className="surface-card p-8 md:p-10">
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {error && (
-                                <div className="p-4 bg-destructive/5 border border-destructive/15 text-[13px] font-[450] text-destructive rounded-[var(--radius-sm)]">
+                                <div className="p-4 bg-destructive/5 border border-destructive/15 text-[13px] font-[450] text-destructive rounded-full">
                                     {error}
                                 </div>
                             )}
@@ -135,7 +135,7 @@ function NewSessionContent() {
                                     </label>
                                     <div className="relative">
                                         <select name="courseId" required
-                                            className="w-full h-12 rounded-[var(--radius-sm)] border border-border bg-background px-4 text-[15px] text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/50 appearance-none cursor-pointer transition-all"
+                                            className="w-full h-12 rounded-full border border-border bg-background px-5 text-[15px] text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/50 appearance-none cursor-pointer transition-all"
                                         >
                                             <option value="">Select course...</option>
                                             {courses.map((course: any) => (
@@ -157,7 +157,7 @@ function NewSessionContent() {
                                     </label>
                                     <div className="relative">
                                         <select name="locationId" required
-                                            className="w-full h-12 rounded-[var(--radius-sm)] border border-border bg-background px-4 text-[15px] text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/50 appearance-none cursor-pointer transition-all"
+                                            className="w-full h-12 rounded-full border border-border bg-background px-5 text-[15px] text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/50 appearance-none cursor-pointer transition-all"
                                         >
                                             <option value="">Select location...</option>
                                             {locations.map((location: any) => (
@@ -179,7 +179,7 @@ function NewSessionContent() {
                                     </label>
                                     <div className="relative">
                                         <select name="duration" required
-                                            className="w-full h-12 rounded-[var(--radius-sm)] border border-border bg-background px-4 text-[15px] text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/50 appearance-none cursor-pointer transition-all"
+                                            className="w-full h-12 rounded-full border border-border bg-background px-5 text-[15px] text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/50 appearance-none cursor-pointer transition-all"
                                         >
                                             {[15, 30, 45, 60, 90, 120].map((m) => (
                                                 <option key={m} value={m}>
@@ -194,7 +194,7 @@ function NewSessionContent() {
                                 </div>
                             </div>
 
-                            <Button type="submit" className="w-full h-12 rounded-[var(--radius-sm)] mt-2" isLoading={isLoading}>
+                            <Button type="submit" className="w-full h-12 mt-2" isLoading={isLoading}>
                                 Start Session
                             </Button>
                         </form>

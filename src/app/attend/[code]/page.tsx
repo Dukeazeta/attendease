@@ -209,7 +209,7 @@ function AttendContent({ shareCode }: { shareCode: string }) {
                                 placeholder="John Doe"
                                 required
                             />
-                            <Button type="submit" className="w-full h-12 rounded-[var(--radius-sm)] mt-2" isLoading={isSubmitting}>
+                            <Button type="submit" className="w-full h-12 mt-2" isLoading={isSubmitting}>
                                 Sign Attendance
                             </Button>
                         </form>
@@ -235,7 +235,7 @@ function AttendContent({ shareCode }: { shareCode: string }) {
                         </div>
                         <h2 className="text-headline-3 text-foreground mb-2">Cannot Sign Attendance</h2>
                         <p className="text-[13px] text-destructive leading-relaxed mb-6">{error}</p>
-                        <Button variant="tonal" onClick={() => window.location.reload()} className="rounded-[var(--radius-sm)]">
+                        <Button variant="tonal" onClick={() => window.location.reload()} className="rounded-full">
                             Try Again
                         </Button>
                     </motion.div>

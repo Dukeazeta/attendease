@@ -13,10 +13,10 @@ export default function DashboardPage() {
     const router = useRouter();
     const { signOut } = useAuthActions();
 
-    const user = useQuery(api.users.currentUser);
-    const courses = useQuery(api.courses.listMyCourses);
-    const locations = useQuery(api.locations.listMyLocations);
-    const sessions = useQuery(api.sessions.listMySessions);
+    const user = useQuery(api.users.current);
+    const courses = useQuery(api.courses.list);
+    const locations = useQuery(api.locations.list);
+    const sessions = useQuery(api.sessions.list);
 
     const handleSignOut = async () => {
         await signOut();
@@ -77,7 +77,7 @@ export default function DashboardPage() {
                         { icon: BookOpen, label: "Courses", value: courses?.length ?? 0, color: "text-blue-600 bg-blue-50" },
                         { icon: MapPin, label: "Locations", value: locations?.length ?? 0, color: "text-emerald-600 bg-emerald-50" },
                         { icon: History, label: "Sessions", value: sessions?.length ?? 0, color: "text-violet-600 bg-violet-50" },
-                        { icon: Users, label: "Enrolled", value: courses?.reduce((acc, c) => acc + (c.studentCount || 0), 0) ?? 0, color: "text-amber-600 bg-amber-50" },
+                        { icon: Users, label: "Total Sessions", value: sessions?.length ?? 0, color: "text-amber-600 bg-amber-50" },
                     ].map((stat, i) => (
                         <div key={i} className="surface-elevated p-6 flex items-center gap-4">
                             <div className={`w-10 h-10 rounded-[var(--radius-sm)] flex items-center justify-center ${stat.color}`}>
@@ -108,14 +108,12 @@ export default function DashboardPage() {
                         { href: "/locations", icon: MapPin, label: "Locations", desc: "Manage saved locations" },
                     ].map((action, i) => (
                         <Link key={i} href={action.href}>
-                            <div className={`p-6 rounded-[var(--radius-lg)] transition-all duration-200 h-full cursor-pointer ${
-                                action.primary
-                                    ? "surface-inverse hover:bg-[#2F3034]"
-                                    : "surface-elevated hover:shadow-lg"
-                            }`}>
-                                <div className={`w-10 h-10 rounded-[var(--radius-sm)] flex items-center justify-center mb-4 ${
-                                    action.primary ? "bg-white/10" : "bg-surface-container"
+                            <div className={`p-6 rounded-[var(--radius-lg)] transition-all duration-200 h-full cursor-pointer ${action.primary
+                                ? "surface-inverse hover:bg-[#2F3034]"
+                                : "surface-elevated hover:shadow-lg"
                                 }`}>
+                                <div className={`w-10 h-10 rounded-[var(--radius-sm)] flex items-center justify-center mb-4 ${action.primary ? "bg-white/10" : "bg-surface-container"
+                                    }`}>
                                     <action.icon className={`w-[18px] h-[18px] ${action.primary ? "text-white/70" : "text-muted-foreground"}`} />
                                 </div>
                                 <h3 className={`text-[15px] font-[450] mb-1 ${action.primary ? "" : "text-foreground"}`}>{action.label}</h3>
@@ -154,19 +152,18 @@ export default function DashboardPage() {
                                     <Link key={session._id} href={`/sessions/${session._id}`} className="block hover:bg-surface-container/50 transition-colors">
                                         <div className="px-6 py-4 flex items-center justify-between">
                                             <div>
-                                                <p className="text-[14.5px] font-[450] text-foreground">{session.courseName || "Untitled Session"}</p>
+                                                <p className="text-[14.5px] font-[450] text-foreground">{session.course?.courseCode} — {session.course?.courseTitle}</p>
                                                 <p className="text-small text-muted-foreground mt-0.5">
                                                     {new Date(session._creationTime).toLocaleDateString('en-US', {
                                                         month: 'short', day: 'numeric', year: 'numeric'
                                                     })}
                                                 </p>
                                             </div>
-                                            <div className={`px-3 py-1 rounded-[var(--radius-full)] text-[11px] font-[450] tracking-[0.3px] uppercase ${
-                                                session.status === 'active' 
-                                                    ? 'bg-emerald-50 text-emerald-700' 
+                                            <div className={`px-3 py-1 rounded-full text-[11px] font-[450] tracking-[0.3px] uppercase ${session.isActive
+                                                    ? 'bg-emerald-50 text-emerald-700'
                                                     : 'bg-surface-container text-muted-foreground'
-                                            }`}>
-                                                {session.status}
+                                                }`}>
+                                                {session.isActive ? 'Active' : 'Ended'}
                                             </div>
                                         </div>
                                     </Link>

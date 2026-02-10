@@ -14,17 +14,17 @@ export default function LoginPage() {
     const { signIn } = useAuthActions();
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsLoading(true);
         setError(null);
 
         const formData = new FormData(e.currentTarget);
-        formData.set("flow", "signIn");
+        const email = formData.get("email") as string;
+        const password = formData.get("password") as string;
 
         try {
-            await signIn("password", formData);
+            await signIn("password", { email, password, flow: "signIn" });
             router.push("/dashboard");
         } catch (err) {
             setError(err instanceof Error ? err.message : "Invalid email or password");
@@ -49,7 +49,7 @@ export default function LoginPage() {
 
                     <div className="space-y-8 max-w-sm w-full">
                         <div className="space-y-3">
-                            <div className="w-10 h-10 rounded-[var(--radius-sm)] bg-primary flex items-center justify-center mb-6">
+                            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center mb-6">
                                 <Activity className="w-5 h-5 text-primary-foreground" />
                             </div>
                             <h1 className="text-headline-3 text-foreground">Welcome back</h1>
@@ -61,7 +61,7 @@ export default function LoginPage() {
                                 <motion.div
                                     initial={{ opacity: 0, y: -8 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className="p-4 bg-destructive/5 border border-destructive/15 text-[13px] font-[450] text-destructive rounded-[var(--radius-sm)]"
+                                    className="p-4 bg-destructive/5 border border-destructive/15 text-[13px] font-[450] text-destructive rounded-[var(--radius-full)]"
                                 >
                                     {error}
                                 </motion.div>
@@ -85,7 +85,7 @@ export default function LoginPage() {
                                 />
                             </div>
 
-                            <Button type="submit" className="w-full h-12 rounded-[var(--radius-sm)]" isLoading={isLoading}>
+                            <Button type="submit" className="w-full h-12" isLoading={isLoading}>
                                 Sign In
                             </Button>
                         </form>
@@ -111,7 +111,7 @@ export default function LoginPage() {
                     className="relative z-10 surface-card p-14 rounded-[var(--radius-xl)] max-w-md text-center"
                 >
                     <div className="flex justify-center mb-8">
-                        <div className="w-16 h-16 rounded-[var(--radius-lg)] bg-surface-container flex items-center justify-center">
+                        <div className="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center">
                             <Activity className="w-8 h-8 text-accent/60" />
                         </div>
                     </div>

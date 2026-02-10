@@ -193,7 +193,7 @@ function SessionContent({ sessionId }: { sessionId: Id<"attendanceSessions"> }) 
                         <div>
                             <div className="flex items-center gap-2">
                                 <h1 className="text-[15px] font-[450] text-foreground leading-none">{session.course?.courseCode}</h1>
-                                <span className={`px-2.5 py-0.5 rounded-[var(--radius-full)] text-[11px] font-[450] ${session.isActive ? "bg-emerald-50 text-emerald-700" : "bg-surface-container text-muted-foreground"
+                                <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-[450] ${session.isActive ? "bg-emerald-50 text-emerald-700" : "bg-surface-container text-muted-foreground"
                                     }`}>
                                     {session.isActive ? "Active" : "Ended"}
                                 </span>
@@ -201,7 +201,7 @@ function SessionContent({ sessionId }: { sessionId: Id<"attendanceSessions"> }) 
                         </div>
                     </div>
                     {session.isActive && (
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-[var(--radius-full)] bg-surface-container">
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container">
                             <Clock className="w-3.5 h-3.5 text-accent" />
                             <span className="text-[13px] font-mono font-[450] text-accent">{timeLeft}</span>
                         </div>
@@ -317,7 +317,7 @@ function SessionContent({ sessionId }: { sessionId: Id<"attendanceSessions"> }) 
                                                         <div className="flex items-center gap-2">
                                                             <h3 className="text-[14.5px] font-[450] text-foreground">{a.studentName}</h3>
                                                             {a.isManualEntry && (
-                                                                <span className="text-[10px] font-[450] px-2 py-0.5 bg-violet-50 text-violet-600 rounded-[var(--radius-full)]">
+                                                                <span className="text-[10px] font-[450] px-2 py-0.5 bg-violet-50 text-violet-600 rounded-full">
                                                                     Manual
                                                                 </span>
                                                             )}

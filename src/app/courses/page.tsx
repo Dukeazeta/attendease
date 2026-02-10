@@ -100,7 +100,7 @@ export default function CoursesPage() {
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
-                    className="surface-elevated overflow-hidden"
+                    className="surface-elevated overflow-hidden rounded-xl"
                 >
                     <div className="px-6 py-5 border-b border-border flex items-center gap-3">
                         <BookOpen className="w-[18px] h-[18px] text-muted-foreground" />
@@ -125,7 +125,7 @@ export default function CoursesPage() {
                                     </div>
                                     <button
                                         onClick={() => handleDelete(course._id)}
-                                        className="p-2.5 rounded-[var(--radius-sm)] hover:bg-destructive/8 text-muted-foreground hover:text-destructive transition-colors"
+                                        className="p-2.5 rounded-full hover:bg-destructive/8 text-muted-foreground hover:text-destructive transition-colors"
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>

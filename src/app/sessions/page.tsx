@@ -80,12 +80,12 @@ function SessionsContent() {
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        <span className={`px-3 py-1 rounded-[var(--radius-full)] text-[11px] font-[450] tracking-[0.3px] uppercase ${s.isActive
-                                                ? "bg-emerald-50 text-emerald-700"
-                                                : "bg-surface-container text-muted-foreground"
+                                        <div className={`px-3 py-1 rounded-full text-[11px] font-[450] tracking-[0.3px] uppercase ${s.isActive
+                                            ? "bg-emerald-50 text-emerald-700"
+                                            : "bg-surface-container text-muted-foreground"
                                             }`}>
                                             {s.isActive ? "Active" : "Ended"}
-                                        </span>
+                                        </div>
                                         <ChevronRight className="w-4 h-4 text-muted-foreground/40" />
                                     </div>
                                 </Link>

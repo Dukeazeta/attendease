@@ -113,7 +113,7 @@ export default function LocationsPage() {
                                 variant="tonal"
                                 onClick={getCurrentLocation}
                                 disabled={isGettingLocation}
-                                className="rounded-[var(--radius-sm)] gap-2"
+                                className="gap-2"
                             >
                                 <Crosshair className="w-4 h-4" />
                                 {isGettingLocation ? "Getting Location..." : "Use Current Location"}
@@ -196,7 +196,7 @@ export default function LocationsPage() {
                                     </div>
                                     <button
                                         onClick={() => handleDelete(location._id)}
-                                        className="p-2.5 rounded-[var(--radius-sm)] hover:bg-destructive/8 text-muted-foreground hover:text-destructive transition-colors"
+                                        className="p-2.5 rounded-full hover:bg-destructive/8 text-muted-foreground hover:text-destructive transition-colors"
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>

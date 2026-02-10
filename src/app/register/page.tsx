@@ -21,6 +21,9 @@ export default function RegisterPage() {
         setError(null);
 
         const formData = new FormData(e.currentTarget);
+        const name = formData.get("name") as string;
+        const email = formData.get("email") as string;
+        const matricNumber = formData.get("matricNumber") as string;
         const password = formData.get("password") as string;
         const confirmPassword = formData.get("confirmPassword") as string;
 
@@ -30,11 +33,14 @@ export default function RegisterPage() {
             return;
         }
 
-        formData.set("flow", "signUp");
-        formData.delete("confirmPassword");
-
         try {
-            await signIn("password", formData);
+            await signIn("password", {
+                name,
+                email,
+                matricNumber,
+                password,
+                flow: "signUp"
+            });
             router.push("/dashboard");
         } catch (err) {
             setError(err instanceof Error ? err.message : "Registration failed. Please try again.");
@@ -54,7 +60,7 @@ export default function RegisterPage() {
                     className="relative z-10 surface-card p-14 rounded-[var(--radius-xl)] max-w-md text-center"
                 >
                     <div className="flex justify-center mb-8">
-                        <div className="w-16 h-16 rounded-[var(--radius-lg)] bg-accent/8 flex items-center justify-center">
+                        <div className="w-16 h-16 rounded-full bg-accent/8 flex items-center justify-center">
                             <UserPlus className="w-8 h-8 text-accent/60" />
                         </div>
                     </div>
@@ -64,11 +70,11 @@ export default function RegisterPage() {
                         Multi-factor binding ensures your identity is protected.
                     </p>
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="surface-container p-4 rounded-[var(--radius-md)]">
+                        <div className="surface-container p-4 rounded-[var(--radius-lg)]">
                             <p className="text-[14.5px] font-[450] text-foreground">Multi-layer</p>
                             <p className="text-small text-muted-foreground/60 mt-0.5">Security</p>
                         </div>
-                        <div className="surface-container p-4 rounded-[var(--radius-md)]">
+                        <div className="surface-container p-4 rounded-[var(--radius-lg)]">
                             <p className="text-[14.5px] font-[450] text-foreground">HW-Locked</p>
                             <p className="text-small text-muted-foreground/60 mt-0.5">Verification</p>
                         </div>
@@ -90,7 +96,7 @@ export default function RegisterPage() {
 
                     <div className="max-w-md w-full">
                         <div className="space-y-3 mb-10">
-                            <div className="w-10 h-10 rounded-[var(--radius-sm)] bg-accent flex items-center justify-center mb-6">
+                            <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center mb-6">
                                 <UserPlus className="w-5 h-5 text-accent-foreground" />
                             </div>
                             <h1 className="text-headline-3 text-foreground">Create account</h1>
@@ -99,7 +105,7 @@ export default function RegisterPage() {
 
                         <form onSubmit={handleSubmit} className="space-y-5">
                             {error && (
-                                <div className="p-4 bg-destructive/5 border border-destructive/15 text-[13px] font-[450] text-destructive rounded-[var(--radius-sm)]">
+                                <div className="p-4 bg-destructive/5 border border-destructive/15 text-[13px] font-[450] text-destructive rounded-[var(--radius-full)]">
                                     {error}
                                 </div>
                             )}
@@ -151,7 +157,7 @@ export default function RegisterPage() {
                                 </div>
                             </div>
 
-                            <Button type="submit" className="w-full h-12 rounded-[var(--radius-sm)] mt-2" isLoading={isLoading}>
+                            <Button type="submit" className="w-full h-12 mt-2" isLoading={isLoading}>
                                 Create Account
                             </Button>
                         </form>
