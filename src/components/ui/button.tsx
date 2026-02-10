@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { motion, type HTMLMotionProps } from "framer-motion";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -9,8 +8,8 @@ function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-export interface ButtonProps extends Omit<HTMLMotionProps<"button">, "children"> {
-    variant?: "primary" | "secondary" | "outline" | "ghost" | "link" | "glass";
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+    variant?: "primary" | "secondary" | "tonal" | "outlined" | "ghost" | "link" | "glass";
     size?: "default" | "sm" | "lg" | "icon";
     isLoading?: boolean;
     children?: React.ReactNode;
@@ -20,28 +19,27 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ({ className, variant = "primary", size = "default", isLoading, children, ...props }, ref) => {
 
         const variantStyles = {
-            primary: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(255,255,255,0.1)] active:shadow-none",
-            secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-            outline: "border border-border bg-transparent hover:bg-white/5 hover:text-foreground",
-            glass: "glass hover:bg-white/10 transition-all",
-            ghost: "hover:bg-white/5 hover:text-foreground",
-            link: "text-primary underline-offset-4 hover:underline",
+            primary: "bg-primary text-primary-foreground hover:bg-[#2F3034] active:bg-[#45474D] shadow-sm",
+            secondary: "bg-secondary text-secondary-foreground hover:bg-[#E6EAF0] active:bg-[#CDD4DC]",
+            tonal: "bg-surface-container text-foreground hover:bg-[#E6EAF0]",
+            outlined: "border border-border bg-transparent hover:bg-surface-container text-foreground",
+            glass: "glass hover:bg-white/95 text-foreground",
+            ghost: "hover:bg-[rgba(33,34,38,0.04)] text-foreground",
+            link: "text-accent underline-offset-4 hover:underline",
         };
 
         const sizeStyles = {
             default: "h-11 px-6 py-2",
-            sm: "h-9 rounded-md px-3 text-xs",
-            lg: "h-14 rounded-md px-10 text-md font-semibold tracking-tight",
+            sm: "h-9 px-4 text-[13px]",
+            lg: "h-14 px-10 text-[15px] font-[450]",
             icon: "h-11 w-11",
         };
 
         return (
-            <motion.button
+            <button
                 ref={ref}
-                whileHover={{ scale: 1.01, translateY: -1 }}
-                whileTap={{ scale: 0.99, translateY: 0 }}
                 className={cn(
-                    "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+                    "inline-flex items-center justify-center whitespace-nowrap rounded-[var(--radius-full)] text-[14.5px] font-[450] tracking-[0.11px] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 cursor-pointer",
                     variantStyles[variant],
                     sizeStyles[size],
                     className
@@ -55,7 +53,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
                 <span className="relative z-10 flex items-center gap-2">
                     {children as React.ReactNode}
                 </span>
-            </motion.button>
+            </button>
         );
     }
 );

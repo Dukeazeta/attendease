@@ -1,61 +1,98 @@
 @import "tailwindcss";
 
 /* ============================================
-   ANTIGRAVITY DESIGN SYSTEM: KINETIC MINIMALISM
+   ANTIGRAVITY DESIGN SYSTEM
+   Inspired by antigravity.google
    ============================================ */
 
 :root {
-  /* Core Palette - Cinematic Noir */
-  --background: #050505;
-  --foreground: #ffffff;
+  /* Surface System — Antigravity Grey Scale */
+  --surface: #F8F9FC;
+  --surface-container: #F0F1F5;
+  --surface-container-high: #EFF2F7;
+  --surface-container-higher: #E6EAF0;
+  --surface-container-highest: #E1E6EC;
+  --on-surface: #121317;
+  --on-surface-variant: #45474D;
+  --inverse-surface: #121317;
+  --inverse-on-surface: #F0F1F5;
 
-  /* Accents & States */
-  --accent: #3b82f6;
-  /* Electric Blue */
-  --accent-foreground: #ffffff;
+  /* Core Palette */
+  --background: #FFFFFF;
+  --foreground: #121317;
 
-  --muted: #141416;
-  --muted-foreground: #71717a;
+  /* Primary — Dark fills, light text */
+  --primary: #121317;
+  --primary-foreground: #FFFFFF;
 
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.05);
-  --ring: rgba(59, 130, 246, 0.5);
+  /* Secondary — Tonal surfaces */
+  --secondary: #F0F1F5;
+  --secondary-foreground: #121317;
 
-  /* Semantic Layers */
-  --primary: #ffffff;
-  --primary-foreground: #000000;
+  /* Accent — Antigravity Blue */
+  --accent: #3279F9;
+  --accent-foreground: #FFFFFF;
 
-  --secondary: #1a1a1c;
-  --secondary-foreground: #f4f4f5;
+  /* Muted */
+  --muted: #F0F1F5;
+  --muted-foreground: #45474D;
 
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
+  /* Borders & Outlines */
+  --border: rgba(33, 34, 38, 0.08);
+  --border-strong: rgba(33, 34, 38, 0.12);
+  --input: rgba(33, 34, 38, 0.06);
+  --ring: rgba(50, 121, 249, 0.4);
+
+  /* Semantic */
+  --destructive: #D93025;
+  --destructive-foreground: #FFFFFF;
+  --success: #1E8E3E;
+  --warning: #F29900;
 
   /* Typography */
-  --font-sans: var(--font-outfit), "Inter", system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains), "JetBrains Mono", monospace;
+  --font-sans: var(--font-google-sans), "Google Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-jetbrains), "JetBrains Mono", "Courier New", monospace;
 
-  /* Radius - Refined & Soft */
-  --radius: 0.75rem;
+  /* Corners — Antigravity shape system */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 36px;
+  --radius-2xl: 48px;
+  --radius-full: 9999px;
+  --radius: 16px;
 
-  /* Glows & Gradients */
-  --glow-primary: rgba(59, 130, 246, 0.15);
-  --glow-secondary: rgba(139, 92, 246, 0.15);
-}
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 36px;
+  --space-2xl: 48px;
+  --space-3xl: 60px;
+  --space-4xl: 80px;
 
-.dark {
-  /* Dark mode is the primary Antigravity experience */
-  --background: #000000;
-  --foreground: #ffffff;
+  /* Elevation Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.04);
 
-  --muted: #0a0a0b;
-  --border: rgba(255, 255, 255, 0.1);
-  --input: rgba(255, 255, 255, 0.03);
+  /* Navigation */
+  --nav-height: 52px;
+
+  /* Easing — Antigravity curves */
+  --ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+  --ease-out-back: cubic-bezier(0.34, 1.85, 0.64, 1);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-container: var(--surface-container);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
@@ -66,6 +103,8 @@
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
 
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
@@ -74,68 +113,190 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
 
-  --animate-pulse-slow: pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   --animate-float: float 6s ease-in-out infinite;
+  --animate-pulse-slow: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* Base Styles */
+/* ============================================
+   BASE STYLES
+   ============================================ */
+
 body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  font-weight: 400;
+  font-optical-sizing: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+  line-height: 1.5;
 }
 
-/* Antigravity Aesthetics */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 450;
+  font-optical-sizing: auto;
+  line-height: 1.1;
+}
 
+/* ============================================
+   SURFACE COMPONENTS
+   ============================================ */
+
+/* Primary card — elevated white surface */
+.surface-card {
+  background: var(--background);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-lg);
+}
+
+.surface-card:hover {
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-strong);
+}
+
+/* Container — subtle grey surface */
+.surface-container {
+  background: var(--surface-container);
+  border-radius: var(--radius-lg);
+}
+
+/* Elevated container */
+.surface-elevated {
+  background: var(--background);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-md);
+}
+
+/* Glass — light frosted effect for nav */
 .glass {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(12px) saturate(180%);
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid var(--border);
 }
 
-.glass-dark {
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  border: 1px solid var(--border);
+/* Inverse surface — dark card */
+.surface-inverse {
+  background: var(--inverse-surface);
+  color: var(--inverse-on-surface);
+  border-radius: var(--radius-lg);
 }
 
-.kinetic-mesh {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background-color: var(--background);
-  background-image:
-    radial-gradient(at 0% 0%, var(--glow-primary) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, var(--glow-secondary) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, var(--glow-primary) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, var(--glow-secondary) 0px, transparent 50%);
-  opacity: 0.8;
-  pointer-events: none;
+/* Tonal — subtle accent tint */
+.surface-tonal {
+  background: rgba(50, 121, 249, 0.06);
+  border-radius: var(--radius-md);
 }
 
-.text-glow {
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+/* ============================================
+   TYPOGRAPHY UTILITY CLASSES
+   ============================================ */
+
+.text-display {
+  font-size: clamp(48px, 8vw, 107px);
+  line-height: 1;
+  letter-spacing: -2px;
+  font-weight: 450;
 }
 
-.glow-orb {
-  position: absolute;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
-  filter: blur(80px);
-  opacity: 0.1;
-  pointer-events: none;
-  animation: var(--animate-float);
+.text-headline-1 {
+  font-size: clamp(36px, 5vw, 72px);
+  line-height: 1;
+  letter-spacing: -1.44px;
+  font-weight: 450;
 }
 
-/* Animations */
+.text-headline-2 {
+  font-size: clamp(28px, 3.5vw, 54px);
+  line-height: 1.04;
+  letter-spacing: -0.95px;
+  font-weight: 450;
+}
+
+.text-headline-3 {
+  font-size: clamp(24px, 2.5vw, 42px);
+  line-height: 1.04;
+  letter-spacing: -0.73px;
+  font-weight: 450;
+}
+
+.text-body {
+  font-size: 17.5px;
+  line-height: 1.45;
+  letter-spacing: 0.18px;
+  font-weight: 400;
+}
+
+.text-caption {
+  font-size: 14.5px;
+  line-height: 1.45;
+  letter-spacing: 0.16px;
+  font-weight: 400;
+}
+
+.text-small {
+  font-size: 12.5px;
+  line-height: 1.24;
+  letter-spacing: 0.11px;
+  font-weight: 450;
+}
+
+/* ============================================
+   BUTTON UTILITIES
+   ============================================ */
+
+.btn-secondary {
+  background: rgba(183, 191, 217, 0.1);
+  border-radius: var(--radius-full);
+  transition: background 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: var(--surface-container);
+}
+
+/* ============================================
+   NAV
+   ============================================ */
+
+.nav-button {
+  background: rgba(183, 191, 217, 0.09);
+  border-radius: var(--radius-full);
+  transition: background 0.2s ease;
+}
+
+.nav-button:hover {
+  background: rgba(183, 191, 217, 0.2);
+}
+
+/* ============================================
+   DIVIDERS
+   ============================================ */
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+}
+
+.divider-strong {
+  border: none;
+  border-top: 1px solid var(--border-strong);
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
 @keyframes float {
 
   0%,
@@ -144,28 +305,42 @@ body {
   }
 
   50% {
-    transform: translateY(-20px) scale(1.05);
+    transform: translateY(-12px) scale(1.02);
   }
 }
 
-@keyframes pulse {
+@keyframes pulse-slow {
 
   0%,
   100% {
-    opacity: 0.4;
+    opacity: 0.6;
   }
 
   50% {
-    opacity: 0.8;
+    opacity: 1;
   }
 }
 
-/* Utilities */
-.text-balance {
-  text-wrap: balance;
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* Custom Scrollbar - Minimal Antigravity */
+.animate-fade-in {
+  animation: fade-in 0.6s var(--ease-out-quint) forwards;
+}
+
+/* ============================================
+   SCROLLBAR — Minimal
+   ============================================ */
+
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -175,25 +350,31 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.12);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.2);
 }
 
-/* Subtle Grain Overlay */
-.bg-grain {
-  position: relative;
+/* ============================================
+   UTILITIES
+   ============================================ */
+
+.text-balance {
+  text-wrap: balance;
 }
 
-.bg-grain::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 50;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
-  pointer-events: none;
-  opacity: 0.5;
+/* Grid container matching Antigravity's max-width */
+.container-ag {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-xl);
+}
+
+@media (max-width: 768px) {
+  .container-ag {
+    padding: 0 var(--space-md);
+  }
 }

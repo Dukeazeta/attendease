@@ -2,234 +2,231 @@
 
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Shield, MapPin, QrCode, Smartphone, CheckCircle, Zap, Activity, Globe, Lock } from "lucide-react";
+import { ArrowRight, Shield, MapPin, QrCode, Smartphone, Zap, Activity, Globe, Lock, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const { scrollYProgress } = useScroll();
-  const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.2], [1, 0.9]);
+  const opacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
+  const y = useTransform(scrollYProgress, [0, 0.15], [0, -40]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-accent selection:text-white overflow-x-hidden bg-grain">
-      {/* Cinematic Background Elements */}
-      <div className="fixed inset-0 kinetic-mesh" />
-      <div className="fixed top-[-10%] left-[-10%] glow-orb" />
-      <div className="fixed bottom-[-10%] right-[-10%] glow-orb" style={{ "--accent": "#8b5cf6", animationDelay: "-2s" } as any} />
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
 
       {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 md:px-12 glass border-b-0 m-4 rounded-2xl max-w-7xl mx-auto backdrop-blur-2xl">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-purple-600 flex items-center justify-center shadow-lg shadow-accent/20">
-            <Activity className="w-5 h-5 text-white" />
+      <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-border">
+        <div className="max-w-[1200px] mx-auto px-6 md:px-9 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-[var(--radius-sm)] bg-primary flex items-center justify-center">
+              <Activity className="w-[18px] h-[18px] text-primary-foreground" />
+            </div>
+            <span className="text-[17px] font-[450] tracking-[-0.3px] text-foreground">AttendEase</span>
           </div>
-          <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">AttendEase</span>
-        </div>
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/60">
-          <Link href="#features" className="hover:text-white transition-colors uppercase tracking-widest">Technology</Link>
-          <Link href="#security" className="hover:text-white transition-colors uppercase tracking-widest">Security</Link>
-        </div>
-        <div className="flex items-center gap-4">
-          <Link href="/login">
-            <Button variant="ghost" className="text-white/60 hover:text-white">Sign In</Button>
-          </Link>
-          <Link href="/register">
-            <Button variant="primary" className="rounded-full px-6">
-              Get Started
-            </Button>
-          </Link>
+          <div className="hidden md:flex items-center gap-8 text-[14.5px] font-[450] text-muted-foreground">
+            <Link href="#features" className="hover:text-foreground transition-colors">Features</Link>
+            <Link href="#security" className="hover:text-foreground transition-colors">Security</Link>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link href="/login">
+              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">Sign In</Button>
+            </Link>
+            <Link href="/register">
+              <Button variant="primary" size="sm">Get Started</Button>
+            </Link>
+          </div>
         </div>
       </nav>
 
       <main>
-        {/* Kinetic Hero Section */}
-        <section className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-20">
-          <motion.div
-            style={{ opacity, scale }}
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-            className="max-w-7xl mx-auto text-center space-y-10"
-          >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass text-[10px] uppercase tracking-[0.3em] font-bold text-accent mb-4 border-accent/20">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
-              </span>
-              System Status: Active
-            </div>
+        {/* Hero Section */}
+        <section className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-16">
+          {/* Subtle gradient background */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#F0F4FF] via-background to-background pointer-events-none" />
 
-            <h1 className="text-6xl md:text-9xl font-bold tracking-tighter leading-[0.9] text-white">
-              <span className="block overflow-hidden">
-                <motion.span
-                  initial={{ y: "100%" }}
-                  animate={{ y: 0 }}
-                  transition={{ delay: 0.2, duration: 1, ease: [0.22, 1, 0.36, 1] }}
-                  className="block"
-                >
-                  PRESENCE
-                </motion.span>
+          <motion.div
+            style={{ opacity, y }}
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
+            className="relative z-10 max-w-[900px] mx-auto text-center space-y-8"
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.6 }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-[var(--radius-full)] bg-surface-container text-[12.5px] font-[450] text-muted-foreground tracking-[0.1px]"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
               </span>
-              <span className="block overflow-hidden">
-                <motion.span
-                  initial={{ y: "100%" }}
-                  animate={{ y: 0 }}
-                  transition={{ delay: 0.4, duration: 1, ease: [0.22, 1, 0.36, 1] }}
-                  className="block text-transparent bg-clip-text bg-gradient-to-b from-white to-white/20"
-                >
-                  VERIFIED
-                </motion.span>
-              </span>
+              Now available for departments
+            </motion.div>
+
+            <h1 className="text-display text-foreground">
+              <motion.span
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15, duration: 0.7, ease: [0.23, 1, 0.32, 1] }}
+                className="block"
+              >
+                Attendance,
+              </motion.span>
+              <motion.span
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.7, ease: [0.23, 1, 0.32, 1] }}
+                className="block text-muted-foreground"
+              >
+                verified.
+              </motion.span>
             </h1>
 
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.8, duration: 1 }}
-              className="text-lg md:text-xl text-white/50 max-w-2xl mx-auto font-light leading-relaxed tracking-wide"
+              transition={{ delay: 0.5, duration: 0.8 }}
+              className="text-body text-muted-foreground max-w-xl mx-auto"
             >
               Anti-cheat attendance infrastructure for the modern classroom.
-              Powered by hardware-binding and multi-layer verification.
+              Powered by hardware-binding, geofencing, and multi-layer verification.
             </motion.p>
 
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1, duration: 1 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-4"
+              transition={{ delay: 0.6, duration: 0.7 }}
+              className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
             >
               <Link href="/register">
-                <Button size="lg" className="rounded-full min-w-[200px] h-14 text-base font-bold group">
-                  Deploy Now
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                <Button size="lg" className="min-w-[180px] gap-2">
+                  Get Started
+                  <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               <Link href="#features">
-                <Button variant="glass" size="lg" className="rounded-full min-w-[200px] h-14 text-base border-white/5">
-                  See Technology
+                <Button variant="outlined" size="lg" className="min-w-[180px]">
+                  Learn More
                 </Button>
               </Link>
             </motion.div>
           </motion.div>
-
-          {/* Floating UI Elements for Depth */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <motion.div
-              animate={{ y: [0, -20, 0] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute top-1/4 right-[10%] w-64 h-64 glass rounded-3xl opacity-20 rotate-12"
-            />
-            <motion.div
-              animate={{ y: [0, 20, 0] }}
-              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute bottom-1/4 left-[5%] w-48 h-48 glass rounded-full opacity-10"
-            />
-          </div>
         </section>
 
-        {/* Features - High Tech Minimalist */}
-        <section id="features" className="py-32 px-6 max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: MapPin,
-                title: "Geotagged",
-                desc: "High-precision GPS locking ensures students are physically present in the hall.",
-                color: "text-blue-500"
-              },
-              {
-                icon: QrCode,
-                title: "Dynamic QR",
-                desc: "Ephemeral QR codes prevent sharing. Real-time regeneration every 5 seconds.",
-                color: "text-purple-500"
-              },
-              {
-                icon: Smartphone,
-                title: "Biometric",
-                desc: "Hardware-level device binding prevents proxy signing and multi-account abuse.",
-                color: "text-emerald-500"
-              }
-            ].map((feature, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.2 }}
-                className="group glass p-10 rounded-[2rem] hover:bg-white/5 transition-all duration-500 border-white/5 hover:border-white/10"
-              >
-                <div className={`mb-8 w-14 h-14 rounded-2xl glass flex items-center justify-center shadow-lg shadow-black/50`}>
-                  <feature.icon className={`h-6 w-6 ${feature.color}`} />
-                </div>
-                <h3 className="text-2xl font-semibold mb-4 text-white tracking-tight">{feature.title}</h3>
-                <p className="text-white/40 leading-relaxed font-light">{feature.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </section>
+        {/* Features — Clean Cards */}
+        <section id="features" className="py-24 md:py-32 px-6">
+          <div className="max-w-[1200px] mx-auto">
+            <div className="text-center mb-16">
+              <p className="text-small text-accent font-[450] tracking-[0.5px] uppercase mb-4">Core Technology</p>
+              <h2 className="text-headline-2 text-foreground">Built for trust</h2>
+            </div>
 
-        {/* Tech Stack - Logos / Identity */}
-        <section className="py-20 border-y border-white/5 overflow-hidden">
-          <div className="max-w-7xl mx-auto px-6">
-            <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/30 text-center mb-12">Engineered with Precision</p>
-            <div className="flex flex-wrap justify-center gap-x-20 gap-y-10 items-center opacity-30 grayscale hover:grayscale-0 transition-all duration-700">
-              {['CONVEX.DB', 'NEXT.JS', 'TAILWIND', 'LUCIDE', 'FRAMER.MOTION'].map((tech) => (
-                <span key={tech} className="text-sm font-bold tracking-[0.2em]">{tech}</span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[
+                {
+                  icon: MapPin,
+                  title: "Geotagged",
+                  desc: "High-precision GPS locking ensures students are physically present in the hall.",
+                  accent: "bg-blue-50 text-blue-600",
+                },
+                {
+                  icon: QrCode,
+                  title: "Shareable Links",
+                  desc: "Generate unique attendance links tied to each session. QR codes and direct links for instant student access.",
+                  accent: "bg-violet-50 text-violet-600",
+                },
+                {
+                  icon: Smartphone,
+                  title: "Device Binding",
+                  desc: "Hardware-level device fingerprinting prevents proxy signing and multi-account abuse.",
+                  accent: "bg-emerald-50 text-emerald-600",
+                },
+              ].map((feature, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.12, duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
+                  className="surface-card p-8 md:p-10 transition-all duration-300 group"
+                >
+                  <div className={`mb-6 w-12 h-12 rounded-[var(--radius-md)] flex items-center justify-center ${feature.accent}`}>
+                    <feature.icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-[22px] font-[450] mb-3 text-foreground tracking-[-0.08px]">{feature.title}</h3>
+                  <p className="text-caption text-muted-foreground leading-relaxed">{feature.desc}</p>
+                </motion.div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Security / Proof Section */}
-        <section id="security" className="py-32 px-6">
-          <div className="max-w-7xl mx-auto glass p-12 md:p-24 rounded-[3rem] relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-accent/10 to-transparent pointer-events-none" />
-            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-              <div className="space-y-8">
-                <h2 className="text-5xl md:text-7xl font-bold tracking-tight text-white leading-none">
-                  Security is not an <span className="text-accent underline decoration-accent/30 underline-offset-8">option</span>.
-                </h2>
-                <p className="text-xl text-white/40 font-light leading-relaxed">
-                  Our multi-factor verification pipeline ensures that every record is legitimate.
-                  From device fingerprinting to network analysis, we've built a fortress around your attendance data.
-                </p>
-                <div className="flex flex-col gap-4">
-                  {[
-                    { icon: Lock, label: "End-to-end encrypted tunnels" },
-                    { icon: Shield, label: "AES-256 data rest encryption" },
-                    { icon: Globe, label: "Distributed edge verification" }
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center gap-4 text-white/60">
-                      <div className="w-8 h-8 glass rounded-full flex items-center justify-center">
-                        <item.icon className="w-4 h-4 text-accent" />
+        {/* Tech Stack */}
+        <section className="py-16 border-y border-border">
+          <div className="max-w-[1200px] mx-auto px-6">
+            <p className="text-small text-muted-foreground/50 text-center mb-10 uppercase tracking-[0.3em]">Engineered With</p>
+            <div className="flex flex-wrap justify-center gap-x-16 gap-y-8 items-center">
+              {['CONVEX', 'NEXT.JS', 'TAILWIND', 'LUCIDE', 'FRAMER'].map((tech) => (
+                <span key={tech} className="text-[13px] font-[450] tracking-[0.15em] text-muted-foreground/40 hover:text-muted-foreground transition-colors">{tech}</span>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Security Section */}
+        <section id="security" className="py-24 md:py-32 px-6">
+          <div className="max-w-[1200px] mx-auto">
+            <div className="surface-card p-10 md:p-16 lg:p-20 overflow-hidden relative">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <div className="space-y-8">
+                  <div>
+                    <p className="text-small text-accent font-[450] tracking-[0.5px] uppercase mb-4">Security</p>
+                    <h2 className="text-headline-2 text-foreground mb-6">
+                      Security is not an <span className="text-accent">option</span>.
+                    </h2>
+                    <p className="text-body text-muted-foreground">
+                      Our multi-factor verification pipeline ensures that every record is legitimate.
+                      From device fingerprinting to network analysis, we&apos;ve built a fortress around your attendance data.
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-4">
+                    {[
+                      { icon: Lock, label: "End-to-end encrypted tunnels" },
+                      { icon: Shield, label: "AES-256 data rest encryption" },
+                      { icon: Globe, label: "Distributed edge verification" },
+                    ].map((item, i) => (
+                      <div key={i} className="flex items-center gap-4 text-foreground">
+                        <div className="w-10 h-10 rounded-[var(--radius-sm)] bg-surface-container flex items-center justify-center">
+                          <item.icon className="w-[18px] h-[18px] text-accent" />
+                        </div>
+                        <span className="text-caption">{item.label}</span>
                       </div>
-                      <span className="text-sm tracking-wide">{item.label}</span>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-              <div className="relative">
-                <div className="aspect-square glass rounded-[2.5rem] flex items-center justify-center p-12 relative group">
-                  <div className="absolute inset-0 bg-accent/5 rounded-[2.5rem] animate-pulse-slow" />
-                  <Shield className="w-32 h-32 text-accent opacity-50 group-hover:scale-110 transition-transform duration-700" />
+                <div className="relative flex items-center justify-center">
+                  <div className="w-full aspect-square bg-surface-container rounded-[var(--radius-xl)] flex items-center justify-center">
+                    <Shield className="w-24 h-24 text-accent/20" />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Final Call to Action */}
-        <section className="py-40 px-6 text-center">
-          <div className="max-w-3xl mx-auto space-y-12">
-            <h2 className="text-5xl md:text-8xl font-bold tracking-tighter text-white">
-              Ready to Upgrade?
+        {/* CTA */}
+        <section className="py-24 md:py-40 px-6 text-center">
+          <div className="max-w-[600px] mx-auto space-y-8">
+            <h2 className="text-headline-1 text-foreground">
+              Ready to upgrade?
             </h2>
-            <p className="text-xl text-white/40 font-light">
+            <p className="text-body text-muted-foreground">
               Onboard your department in minutes. No complex hardware required.
             </p>
             <Link href="/register">
-              <Button size="lg" className="h-20 px-16 text-xl rounded-full bg-white text-black hover:bg-white/90 shadow-[0_0_50px_rgba(255,255,255,0.2)]">
+              <Button size="lg" className="h-16 px-12 text-[17px] mt-4">
                 Launch System
+                <ChevronRight className="w-5 h-5 ml-1" />
               </Button>
             </Link>
           </div>
@@ -237,22 +234,22 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="py-12 border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="flex items-center gap-3">
-            <div className="w-6 h-6 rounded bg-white/10 flex items-center justify-center">
-              <Activity className="w-3 h-3 text-white" />
+      <footer className="py-10 border-t border-border">
+        <div className="max-w-[1200px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-2.5">
+            <div className="w-6 h-6 rounded-[var(--radius-xs)] bg-surface-container flex items-center justify-center">
+              <Activity className="w-3.5 h-3.5 text-muted-foreground" />
             </div>
-            <span className="text-sm font-bold tracking-tight opacity-60">AttendEase</span>
+            <span className="text-[14.5px] font-[450] text-muted-foreground">AttendEase</span>
           </div>
 
-          <div className="flex gap-12 text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">
-            <a href="#" className="hover:text-accent transition-colors">Privacy</a>
-            <a href="#" className="hover:text-accent transition-colors">Infrastructure</a>
-            <a href="#" className="hover:text-accent transition-colors">Contact</a>
+          <div className="flex gap-8 text-[12.5px] font-[450] text-muted-foreground/60">
+            <a href="#" className="hover:text-foreground transition-colors">Privacy</a>
+            <a href="#" className="hover:text-foreground transition-colors">Infrastructure</a>
+            <a href="#" className="hover:text-foreground transition-colors">Contact</a>
           </div>
 
-          <p className="text-[10px] font-medium text-white/20 uppercase tracking-widest">© 2026 Antigravity Systems</p>
+          <p className="text-[12.5px] font-[450] text-muted-foreground/40">© 2026 AttendEase</p>
         </div>
       </footer>
     </div>
