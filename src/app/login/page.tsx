@@ -17,6 +17,7 @@ export default function LoginPage() {
     const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+
     useEffect(() => {
         if (!isAuthLoading && isAuthenticated) {
             router.replace("/dashboard");
@@ -34,8 +35,6 @@ export default function LoginPage() {
 
         try {
             await signIn("password", { email, password, flow: "signIn" });
-            router.refresh();
-            router.replace("/dashboard");
         } catch (err) {
             setError(getErrorMessage(err, "Invalid email or password"));
         } finally {
