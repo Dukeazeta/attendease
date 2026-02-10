@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useQuery } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
@@ -8,10 +9,12 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Activity, LogOut, Plus, BookOpen, MapPin, History, Users, Layers } from "lucide-react";
 import { motion } from "framer-motion";
+import { getErrorMessage } from "@/lib/convex-error";
 
 export default function DashboardPage() {
     const router = useRouter();
     const { signOut } = useAuthActions();
+    const [signOutError, setSignOutError] = useState<string | null>(null);
 
     const user = useQuery(api.users.current);
     const courses = useQuery(api.courses.list);
@@ -19,8 +22,13 @@ export default function DashboardPage() {
     const sessions = useQuery(api.sessions.list);
 
     const handleSignOut = async () => {
-        await signOut();
-        router.push("/");
+        try {
+            setSignOutError(null);
+            await signOut();
+            router.push("/");
+        } catch (error) {
+            setSignOutError(getErrorMessage(error, "Unable to sign out right now."));
+        }
     };
 
     const recentSessions = sessions?.slice(0, 5);
@@ -49,6 +57,12 @@ export default function DashboardPage() {
             </header>
 
             <main className="max-w-[1200px] mx-auto px-6 py-10">
+                {signOutError && (
+                    <div className="mb-6 p-4 bg-destructive/5 border border-destructive/15 text-[13px] font-[450] text-destructive rounded-[var(--radius-full)]">
+                        {signOutError}
+                    </div>
+                )}
+
                 {/* Greeting */}
                 <motion.div
                     initial={{ opacity: 0, y: 12 }}
