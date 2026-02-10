@@ -50,8 +50,6 @@ export default function RegisterPage() {
                 password,
                 flow: "signUp"
             });
-            router.refresh();
-            router.replace("/dashboard");
         } catch (err) {
             setError(getErrorMessage(err, "Registration failed. Please try again."));
         } finally {
