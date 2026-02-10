@@ -34,33 +34,34 @@ function AttendContent({ shareCode }: { shareCode: string }) {
         try {
             const fp = await FingerprintJS.load();
             const result = await fp.get();
-            const c = result.components;
-            const hardwareSignals = {
-                screenResolution: "screenResolution" in c ? c.screenResolution : null,
-                colorDepth: "colorDepth" in c ? c.colorDepth : null,
-                canvas: "canvas" in c ? c.canvas : null,
-                audio: "audio" in c ? c.audio : null,
-                timezone: "timezone" in c ? c.timezone : null,
-                platform: "platform" in c ? c.platform : null,
-                hardwareConcurrency: "hardwareConcurrency" in c ? c.hardwareConcurrency : null,
-                deviceMemory: "deviceMemory" in c ? c.deviceMemory : null,
-                webGlBasics: "webGlBasics" in c ? c.webGlBasics : null,
+
+            // visitorId is the standard unique identifier provided by FingerprintJS
+            // It's already a hash of multiple browser/hardware signals
+            const visitorId = result.visitorId;
+
+            // To make it even more unique to AttendEase and slightly harder to spoof
+            // we can combine it with a few high-entropy but stable signals
+            const components = result.components;
+            const extraSignals = {
+                vendor: "vendor" in components ? (components.vendor as any).value : "",
+                renderer: "webGlRenderer" in components ? (components.webGlRenderer as any).value : "",
+                languages: "languages" in components ? (components.languages as any).value : [],
             };
-            const signalString = JSON.stringify(hardwareSignals);
+
+            const salt = "attendease_v2_stable";
+            const combinedString = `${visitorId}:${JSON.stringify(extraSignals)}:${salt}`;
+
+            // Hash the combined string for a clean fingerprint
             const encoder = new TextEncoder();
-            const data = encoder.encode(signalString);
+            const data = encoder.encode(combinedString);
             const hashBuffer = await crypto.subtle.digest("SHA-256", data);
             const hashArray = Array.from(new Uint8Array(hashBuffer));
             const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-            let storedId = localStorage.getItem("attendease_device_id");
-            if (!storedId) {
-                storedId = crypto.randomUUID();
-                localStorage.setItem("attendease_device_id", storedId);
-            }
-            return `${hashHex.slice(0, 32)}_${storedId.slice(0, 8)}`;
+
+            return hashHex.slice(0, 48);
         } catch (err) {
             console.error("Fingerprint generation failed:", err);
-            throw new Error("Could not verify device. Please refresh and try again.");
+            throw new Error("Could not verify device security. Please use a standard browser.");
         }
     }
 
