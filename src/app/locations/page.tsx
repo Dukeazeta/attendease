@@ -1,23 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/../convex/_generated/api";
-import { Id } from "@/../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, MapPin, Crosshair, Trash2, Check } from "lucide-react";
 import { motion } from "framer-motion";
+import { listLocations, createLocation, removeLocation } from "@/app/actions/locations";
 
 export default function LocationsPage() {
-    const locations = useQuery(api.locations.list);
-    const createLocation = useMutation(api.locations.create);
-    const removeLocation = useMutation(api.locations.remove);
-
+    const [locations, setLocations] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [isGettingLocation, setIsGettingLocation] = useState(false);
     const [currentCoords, setCurrentCoords] = useState<{ lat: number; lng: number } | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        fetchLocations();
+    }, []);
+
+    const fetchLocations = async () => {
+        try {
+            const data = await listLocations();
+            setLocations(data);
+        } catch (err) {
+            console.error("Failed to fetch locations:", err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const getCurrentLocation = () => {
         setIsGettingLocation(true);
@@ -52,6 +63,7 @@ export default function LocationsPage() {
             });
             (e.target as HTMLFormElement).reset();
             setCurrentCoords(null);
+            fetchLocations();
         } catch (err) {
             alert(err instanceof Error ? err.message : "Failed to add location");
         } finally {
@@ -59,16 +71,17 @@ export default function LocationsPage() {
         }
     };
 
-    const handleDelete = async (id: Id<"locations">) => {
+    const handleDelete = async (id: string) => {
         if (!confirm("Delete this location?")) return;
         try {
-            await removeLocation({ id });
+            await removeLocation(id);
+            fetchLocations();
         } catch (err) {
             alert(err instanceof Error ? err.message : "Failed to delete location");
         }
     };
 
-    if (locations === undefined) {
+    if (isLoading) {
         return (
             <div className="min-h-screen bg-surface flex items-center justify-center">
                 <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
@@ -183,7 +196,7 @@ export default function LocationsPage() {
                     ) : (
                         <div className="divide-y divide-border">
                             {locations.map((location) => (
-                                <div key={location._id} className="px-6 py-4 flex items-center justify-between hover:bg-surface-container/50 transition-colors">
+                                <div key={location.id} className="px-6 py-4 flex items-center justify-between hover:bg-surface-container/50 transition-colors">
                                     <div>
                                         <h3 className="text-[14.5px] font-[450] text-foreground">{location.name}</h3>
                                         <p className="text-small text-muted-foreground mt-0.5">
@@ -195,7 +208,7 @@ export default function LocationsPage() {
                                         </p>
                                     </div>
                                     <button
-                                        onClick={() => handleDelete(location._id)}
+                                        onClick={() => handleDelete(location.id)}
                                         className="p-2.5 rounded-full hover:bg-destructive/8 text-muted-foreground hover:text-destructive transition-colors"
                                     >
                                         <Trash2 className="w-4 h-4" />

@@ -1,28 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useAuthActions } from "@convex-dev/auth/react";
-import { useConvexAuth } from "convex/react";
+import { useState } from "react";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, UserPlus } from "lucide-react";
 import { motion } from "framer-motion";
-import { getErrorMessage } from "@/lib/convex-error";
 
 export default function RegisterPage() {
     const router = useRouter();
-    const { signIn } = useAuthActions();
-    const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-
-    useEffect(() => {
-        if (!isAuthLoading && isAuthenticated) {
-            router.replace("/dashboard");
-        }
-    }, [isAuthLoading, isAuthenticated, router]);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -43,15 +33,22 @@ export default function RegisterPage() {
         }
 
         try {
-            await signIn("password", {
+            const result = await signIn("credentials", {
                 name,
                 email,
                 matricNumber,
                 password,
-                flow: "signUp"
+                flow: "signUp",
+                redirect: false,
             });
+
+            if (result?.error) {
+                setError(result.error);
+            } else {
+                router.replace("/dashboard");
+            }
         } catch (err) {
-            setError(getErrorMessage(err, "Registration failed. Please try again."));
+            setError("Registration failed. Please try again.");
         } finally {
             setIsLoading(false);
         }

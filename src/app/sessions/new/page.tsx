@@ -1,29 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/../convex/_generated/api";
-import { Authenticated, Unauthenticated } from "convex/react";
-import { redirect } from "next/navigation";
-import type { Id } from "@/../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, BookOpen, MapPin, Clock, Activity, Layers } from "lucide-react";
 import { motion } from "framer-motion";
+import { listCourses } from "@/app/actions/courses";
+import { listLocations } from "@/app/actions/locations";
+import { createSession } from "@/app/actions/sessions";
 
-function NewSessionContent() {
+export default function NewSessionPage() {
     const router = useRouter();
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingData, setIsLoadingData] = useState(true);
+    const [isCreating, setIsCreating] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const courses = useQuery(api.courses.list);
-    const locations = useQuery(api.locations.list);
-    const createSession = useMutation(api.sessions.create);
+    const [courses, setCourses] = useState<any[]>([]);
+    const [locations, setLocations] = useState<any[]>([]);
+
+    useEffect(() => {
+        async function fetchData() {
+            try {
+                const [c, l] = await Promise.all([listCourses(), listLocations()]);
+                setCourses(c);
+                setLocations(l);
+            } catch (err) {
+                console.error("Failed to fetch data:", err);
+            } finally {
+                setIsLoadingData(false);
+            }
+        }
+        fetchData();
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setIsLoading(true);
+        setIsCreating(true);
         setError(null);
 
         const formData = new FormData(e.currentTarget);
@@ -31,18 +44,18 @@ function NewSessionContent() {
 
         try {
             const sessionId = await createSession({
-                courseId: formData.get("courseId") as Id<"courses">,
-                locationId: formData.get("locationId") as Id<"locations">,
+                courseId: formData.get("courseId") as string,
+                locationId: formData.get("locationId") as string,
                 durationMinutes,
             });
             router.push(`/sessions/${sessionId}`);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to create session");
-            setIsLoading(false);
+            setIsCreating(false);
         }
     };
 
-    if (courses === undefined || locations === undefined) {
+    if (isLoadingData) {
         return (
             <div className="min-h-screen bg-surface flex items-center justify-center">
                 <div className="w-10 h-10 border-2 border-accent border-t-transparent rounded-full animate-spin" />
@@ -139,7 +152,7 @@ function NewSessionContent() {
                                         >
                                             <option value="">Select course...</option>
                                             {courses.map((course: any) => (
-                                                <option key={course._id} value={course._id}>
+                                                <option key={course.id} value={course.id}>
                                                     {course.courseCode} — {course.courseTitle}
                                                 </option>
                                             ))}
@@ -161,7 +174,7 @@ function NewSessionContent() {
                                         >
                                             <option value="">Select location...</option>
                                             {locations.map((location: any) => (
-                                                <option key={location._id} value={location._id}>
+                                                <option key={location.id} value={location.id}>
                                                     {location.name} {location.building && `(${location.building})`}
                                                 </option>
                                             ))}
@@ -194,7 +207,7 @@ function NewSessionContent() {
                                 </div>
                             </div>
 
-                            <Button type="submit" className="w-full h-12 mt-2" isLoading={isLoading}>
+                            <Button type="submit" className="w-full h-12 mt-2" isLoading={isCreating}>
                                 Start Session
                             </Button>
                         </form>
@@ -213,23 +226,5 @@ function NewSessionContent() {
                 </motion.div>
             </main>
         </div>
-    );
-}
-
-function RedirectToLogin() {
-    redirect("/login");
-    return null;
-}
-
-export default function NewSessionPage() {
-    return (
-        <>
-            <Authenticated>
-                <NewSessionContent />
-            </Authenticated>
-            <Unauthenticated>
-                <RedirectToLogin />
-            </Unauthenticated>
-        </>
     );
 }

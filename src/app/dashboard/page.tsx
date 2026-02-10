@@ -1,38 +1,61 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useQuery } from "convex/react";
-import { useAuthActions } from "@convex-dev/auth/react";
-import { api } from "@/../convex/_generated/api";
+import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Activity, LogOut, Plus, BookOpen, MapPin, History, Users, Layers } from "lucide-react";
 import { motion } from "framer-motion";
-import { getErrorMessage } from "@/lib/convex-error";
+import { listCourses } from "@/app/actions/courses";
+import { listLocations } from "@/app/actions/locations";
+import { listSessions } from "@/app/actions/sessions";
 
 export default function DashboardPage() {
     const router = useRouter();
-    const { signOut } = useAuthActions();
+    const { data: session, status } = useSession();
     const [signOutError, setSignOutError] = useState<string | null>(null);
 
-    const user = useQuery(api.users.current);
-    const courses = useQuery(api.courses.list);
-    const locations = useQuery(api.locations.list);
-    const sessions = useQuery(api.sessions.list);
+    const [courses, setCourses] = useState<any[]>([]);
+    const [locations, setLocations] = useState<any[]>([]);
+    const [sessions, setSessions] = useState<any[]>([]);
+    const [isLoadingData, setIsLoadingData] = useState(true);
+
+    useEffect(() => {
+        async function fetchData() {
+            try {
+                const [c, l, s] = await Promise.all([
+                    listCourses(),
+                    listLocations(),
+                    listSessions()
+                ]);
+                setCourses(c);
+                setLocations(l);
+                setSessions(s);
+            } catch (err) {
+                console.error("Failed to fetch dashboard data:", err);
+            } finally {
+                setIsLoadingData(false);
+            }
+        }
+        if (status === "authenticated") {
+            fetchData();
+        }
+    }, [status]);
 
     const handleSignOut = async () => {
         try {
             setSignOutError(null);
-            await signOut();
+            await signOut({ redirect: false });
             router.push("/");
         } catch (error) {
-            setSignOutError(getErrorMessage(error, "Unable to sign out right now."));
+            setSignOutError("Unable to sign out right now.");
         }
     };
 
     const recentSessions = sessions?.slice(0, 5);
-    const isLoading = user === undefined;
+    const isLoading = status === "loading" || isLoadingData;
+    const user = session?.user;
 
     return (
         <div className="min-h-screen bg-surface text-foreground">
@@ -163,19 +186,19 @@ export default function DashboardPage() {
                         ) : recentSessions && recentSessions.length > 0 ? (
                             <div className="divide-y divide-border">
                                 {recentSessions.map((session) => (
-                                    <Link key={session._id} href={`/sessions/${session._id}`} className="block hover:bg-surface-container/50 transition-colors">
+                                    <Link key={session.id} href={`/sessions/${session.id}`} className="block hover:bg-surface-container/50 transition-colors">
                                         <div className="px-6 py-4 flex items-center justify-between">
                                             <div>
                                                 <p className="text-[14.5px] font-[450] text-foreground">{session.course?.courseCode} — {session.course?.courseTitle}</p>
                                                 <p className="text-small text-muted-foreground mt-0.5">
-                                                    {new Date(session._creationTime).toLocaleDateString('en-US', {
+                                                    {new Date(session.startTime).toLocaleDateString('en-US', {
                                                         month: 'short', day: 'numeric', year: 'numeric'
                                                     })}
                                                 </p>
                                             </div>
                                             <div className={`px-3 py-1 rounded-full text-[11px] font-[450] tracking-[0.3px] uppercase ${session.isActive
-                                                    ? 'bg-emerald-50 text-emerald-700'
-                                                    : 'bg-surface-container text-muted-foreground'
+                                                ? 'bg-emerald-50 text-emerald-700'
+                                                : 'bg-surface-container text-muted-foreground'
                                                 }`}>
                                                 {session.isActive ? 'Active' : 'Ended'}
                                             </div>

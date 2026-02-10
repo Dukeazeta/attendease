@@ -1,18 +1,31 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useQuery } from "convex/react";
-import { api } from "../../../convex/_generated/api";
-import { Authenticated, Unauthenticated } from "convex/react";
-import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, History, Plus, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { listSessions } from "@/app/actions/sessions";
 
-function SessionsContent() {
-    const sessions = useQuery(api.sessions.list);
+export default function SessionsHistoryPage() {
+    const [sessions, setSessions] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    if (sessions === undefined) {
+    useEffect(() => {
+        const fetchSessions = async () => {
+            try {
+                const data = await listSessions();
+                setSessions(data);
+            } catch (err) {
+                console.error("Failed to fetch sessions:", err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchSessions();
+    }, []);
+
+    if (isLoading) {
         return (
             <div className="min-h-screen bg-surface flex items-center justify-center">
                 <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
@@ -62,8 +75,8 @@ function SessionsContent() {
                         <div className="divide-y divide-border">
                             {sessions.map((s: any) => (
                                 <Link
-                                    key={s._id}
-                                    href={`/sessions/${s._id}`}
+                                    key={s.id}
+                                    href={`/sessions/${s.id}`}
                                     className="px-6 py-4 flex items-center justify-between hover:bg-surface-container/50 transition-colors block"
                                 >
                                     <div>
@@ -95,23 +108,5 @@ function SessionsContent() {
                 </motion.div>
             </main>
         </div>
-    );
-}
-
-function RedirectToLogin() {
-    redirect("/login");
-    return null;
-}
-
-export default function SessionsHistoryPage() {
-    return (
-        <>
-            <Authenticated>
-                <SessionsContent />
-            </Authenticated>
-            <Unauthenticated>
-                <RedirectToLogin />
-            </Unauthenticated>
-        </>
     );
 }

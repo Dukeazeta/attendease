@@ -2,12 +2,12 @@
 
 import { useState, useEffect, use } from "react";
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MapPin, CheckCircle2, XCircle, Loader2, Shield } from "lucide-react";
 import { motion } from "framer-motion";
+import { getSessionByShareCode } from "@/app/actions/sessions";
+import { submitAttendance } from "@/app/actions/attendance";
 
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
     const R = 6371e3;
@@ -27,9 +27,8 @@ function AttendContent({ shareCode }: { shareCode: string }) {
     const [distance, setDistance] = useState<number | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [deviceFingerprint, setDeviceFingerprint] = useState<string | null>(null);
-
-    const session = useQuery(api.sessions.getByShareCode, { shareCode });
-    const submitAttendance = useMutation(api.attendance.submit);
+    const [session, setSession] = useState<any>(null);
+    const [isLoadingSession, setIsLoadingSession] = useState(true);
 
     async function generateHardwareFingerprint(): Promise<string> {
         try {
@@ -66,10 +65,25 @@ function AttendContent({ shareCode }: { shareCode: string }) {
     }
 
     useEffect(() => {
-        if (session === undefined) return;
-        if (session === null) { setError("Session not found."); setStep("error"); return; }
+        async function fetchSession() {
+            try {
+                const s = await getSessionByShareCode(shareCode);
+                setSession(s);
+            } catch (err) {
+                console.error("Failed to fetch session:", err);
+                setError("Failed to load session.");
+                setStep("error");
+            } finally {
+                setIsLoadingSession(false);
+            }
+        }
+        fetchSession();
+    }, [shareCode]);
+
+    useEffect(() => {
+        if (!session) return;
         if (!session.isActive) { setError("This session has ended."); setStep("error"); return; }
-        if (session.endTime < Date.now()) { setError("This session has expired."); setStep("error"); return; }
+        if (new Date(session.endTime).getTime() < Date.now()) { setError("This session has expired."); setStep("error"); return; }
 
         generateHardwareFingerprint()
             .then(fp => setDeviceFingerprint(fp))
@@ -120,7 +134,7 @@ function AttendContent({ shareCode }: { shareCode: string }) {
     };
 
     // Loading
-    if (session === undefined) {
+    if (isLoadingSession) {
         return (
             <div className="min-h-screen bg-surface flex items-center justify-center p-6">
                 <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="surface-card p-10 text-center max-w-sm w-full">

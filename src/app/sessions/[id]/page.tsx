@@ -3,11 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, useRef, use } from "react";
 import QRCode from "qrcode";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/../convex/_generated/api";
-import { Authenticated, Unauthenticated } from "convex/react";
-import { redirect, useRouter } from "next/navigation";
-import type { Id } from "@/../convex/_generated/dataModel";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,16 +12,18 @@ import {
     Plus, Edit3, Trash2, X, ShieldCheck
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { getSession, endSession } from "@/app/actions/sessions";
+import { listAttendancesBySession, addManualAttendance, updateAttendance, removeAttendance } from "@/app/actions/attendance";
 
 interface Attendance {
-    _id: Id<"attendances">;
+    id: string;
     matricNumber: string;
     studentName: string;
     signedAt: number;
     isManualEntry: boolean;
 }
 
-function SessionContent({ sessionId }: { sessionId: Id<"attendanceSessions"> }) {
+function SessionContent({ sessionId }: { sessionId: string }) {
     const router = useRouter();
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [timeLeft, setTimeLeft] = useState("");
@@ -36,24 +34,41 @@ function SessionContent({ sessionId }: { sessionId: Id<"attendanceSessions"> }) 
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [selectedAttendance, setSelectedAttendance] = useState<Attendance | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [modalError, setModalError] = useState<string | null>(null);
 
     const [addForm, setAddForm] = useState({ matricNumber: "", studentName: "" });
     const [editForm, setEditForm] = useState({ matricNumber: "", studentName: "" });
 
-    const session = useQuery(api.sessions.get, { id: sessionId });
-    const attendances = useQuery(api.attendance.listBySession, { sessionId });
-    const endSessionMutation = useMutation(api.sessions.endSession);
-    const addManualMutation = useMutation(api.attendance.addManual);
-    const updateAttendanceMutation = useMutation(api.attendance.update);
-    const removeAttendanceMutation = useMutation(api.attendance.remove);
+    const [session, setSession] = useState<any>(null);
+    const [attendances, setAttendances] = useState<Attendance[]>([]);
 
-    const sortedAttendances = attendances
-        ? [...attendances].sort((a, b) => a.studentName.localeCompare(b.studentName))
-        : [];
+    useEffect(() => {
+        async function fetchData() {
+            try {
+                const [s, a] = await Promise.all([
+                    getSession(sessionId),
+                    listAttendancesBySession(sessionId)
+                ]);
+                if (!s) {
+                    router.push("/dashboard");
+                    return;
+                }
+                setSession(s);
+                setAttendances(a as Attendance[]);
+            } catch (err) {
+                console.error("Failed to fetch session data:", err);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        fetchData();
+    }, [sessionId, router]);
 
-    const shareUrl = typeof window !== "undefined"
-        ? `${window.location.origin}/attend/${session?.shareCode}`
+    const sortedAttendances = [...attendances].sort((a, b) => a.studentName.localeCompare(b.studentName));
+
+    const shareUrl = typeof window !== "undefined" && session
+        ? `${window.location.origin}/attend/${session.shareCode}`
         : "";
 
     // Generate QR with Antigravity-appropriate colors
@@ -95,7 +110,13 @@ function SessionContent({ sessionId }: { sessionId: Id<"attendanceSessions"> }) 
 
     const handleEndSession = async () => {
         if (confirm("End this attendance session? This cannot be reversed.")) {
-            await endSessionMutation({ id: sessionId });
+            try {
+                await endSession(sessionId);
+                const updatedSession = await getSession(sessionId);
+                setSession(updatedSession);
+            } catch (err) {
+                console.error("Failed to end session:", err);
+            }
         }
     };
 
@@ -117,7 +138,9 @@ function SessionContent({ sessionId }: { sessionId: Id<"attendanceSessions"> }) 
         setIsSubmitting(true);
         setModalError(null);
         try {
-            await addManualMutation({ sessionId, matricNumber: addForm.matricNumber, studentName: addForm.studentName });
+            await addManualAttendance({ sessionId, matricNumber: addForm.matricNumber, studentName: addForm.studentName });
+            const updatedAttendances = await listAttendancesBySession(sessionId);
+            setAttendances(updatedAttendances as Attendance[]);
             setShowAddModal(false);
             setAddForm({ matricNumber: "", studentName: "" });
         } catch (err) {
@@ -131,7 +154,9 @@ function SessionContent({ sessionId }: { sessionId: Id<"attendanceSessions"> }) 
         setIsSubmitting(true);
         setModalError(null);
         try {
-            await updateAttendanceMutation({ id: selectedAttendance._id, matricNumber: editForm.matricNumber, studentName: editForm.studentName });
+            await updateAttendance({ id: selectedAttendance.id, matricNumber: editForm.matricNumber, studentName: editForm.studentName });
+            const updatedAttendances = await listAttendancesBySession(sessionId);
+            setAttendances(updatedAttendances as Attendance[]);
             setShowEditModal(false);
             setSelectedAttendance(null);
             setEditForm({ matricNumber: "", studentName: "" });
@@ -145,7 +170,9 @@ function SessionContent({ sessionId }: { sessionId: Id<"attendanceSessions"> }) 
         setIsSubmitting(true);
         setModalError(null);
         try {
-            await removeAttendanceMutation({ id: selectedAttendance._id });
+            await removeAttendance(selectedAttendance.id);
+            const updatedAttendances = await listAttendancesBySession(sessionId);
+            setAttendances(updatedAttendances as Attendance[]);
             setShowDeleteConfirm(false);
             setSelectedAttendance(null);
         } catch (err) {
@@ -166,7 +193,7 @@ function SessionContent({ sessionId }: { sessionId: Id<"attendanceSessions"> }) 
         setShowDeleteConfirm(true);
     };
 
-    if (session === undefined || attendances === undefined) {
+    if (isLoading) {
         return (
             <div className="min-h-screen bg-surface flex items-center justify-center">
                 <div className="w-10 h-10 border-2 border-accent border-t-transparent rounded-full animate-spin" />
@@ -174,10 +201,7 @@ function SessionContent({ sessionId }: { sessionId: Id<"attendanceSessions"> }) 
         );
     }
 
-    if (session === null) {
-        router.push("/dashboard");
-        return null;
-    }
+    if (!session) return null;
 
     return (
         <div className="min-h-screen bg-surface text-foreground overflow-x-hidden">
@@ -304,7 +328,7 @@ function SessionContent({ sessionId }: { sessionId: Id<"attendanceSessions"> }) 
                                     <div className="divide-y divide-border">
                                         {sortedAttendances.map((a, i) => (
                                             <motion.div
-                                                key={a._id}
+                                                key={a.id}
                                                 initial={{ opacity: 0, x: -10 }}
                                                 animate={{ opacity: 1, x: 0 }}
                                                 className="px-6 py-3.5 flex items-center justify-between hover:bg-surface-container/50 transition-colors group"
@@ -437,17 +461,7 @@ function SessionContent({ sessionId }: { sessionId: Id<"attendanceSessions"> }) 
     );
 }
 
-function RedirectToLogin() {
-    redirect("/login");
-    return null;
-}
-
 export default function SessionDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
-    return (
-        <>
-            <Authenticated><SessionContent sessionId={id as Id<"attendanceSessions">} /></Authenticated>
-            <Unauthenticated><RedirectToLogin /></Unauthenticated>
-        </>
-    );
+    return <SessionContent sessionId={id} />;
 }

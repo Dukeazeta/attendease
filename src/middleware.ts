@@ -1,29 +1,29 @@
-import {
-  convexAuthNextjsMiddleware,
-  createRouteMatcher,
-  nextjsMiddlewareRedirect,
-} from "@convex-dev/auth/nextjs/server";
+import NextAuth from "next-auth";
+import { authConfig } from "@/lib/auth.config";
+import { NextResponse } from "next/server";
 
-const isAuthPage = createRouteMatcher(["/login", "/register"]);
-const isProtectedRoute = createRouteMatcher([
-  "/dashboard(.*)",
-  "/courses(.*)",
-  "/sessions(.*)",
-  "/locations(.*)",
-]);
+const { auth } = NextAuth(authConfig);
 
-export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
-  // Redirect logged-in users away from auth pages
-  if (isAuthPage(request) && (await convexAuth.isAuthenticated())) {
-    return nextjsMiddlewareRedirect(request, "/dashboard");
+export default auth((req) => {
+  const isLoggedIn = !!req.auth;
+  const isAuthPage = req.nextUrl.pathname.startsWith("/login") || req.nextUrl.pathname.startsWith("/register");
+  const isProtectedRoute =
+    req.nextUrl.pathname.startsWith("/dashboard") ||
+    req.nextUrl.pathname.startsWith("/courses") ||
+    req.nextUrl.pathname.startsWith("/sessions") ||
+    req.nextUrl.pathname.startsWith("/locations");
+
+  if (isAuthPage && isLoggedIn) {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
   }
-  // Redirect unauthenticated users to login
-  if (isProtectedRoute(request) && !(await convexAuth.isAuthenticated())) {
-    return nextjsMiddlewareRedirect(request, "/login");
+
+  if (isProtectedRoute && !isLoggedIn) {
+    return NextResponse.redirect(new URL("/login", req.url));
   }
+
+  return NextResponse.next();
 });
 
 export const config = {
-  // Run middleware on all routes except static assets
-  matcher: ["/((?!.*\\..*|_next).*)"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };

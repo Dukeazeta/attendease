@@ -1,20 +1,32 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/../convex/_generated/api";
-import { Id } from "@/../convex/_generated/dataModel";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, BookOpen, Plus, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { listCourses, createCourse, removeCourse } from "@/app/actions/courses";
 
 export default function CoursesPage() {
-    const courses = useQuery(api.courses.list);
-    const createCourse = useMutation(api.courses.create);
-    const removeCourse = useMutation(api.courses.remove);
+    const [courses, setCourses] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        fetchCourses();
+    }, []);
+
+    const fetchCourses = async () => {
+        try {
+            const data = await listCourses();
+            setCourses(data);
+        } catch (err) {
+            console.error("Failed to fetch courses:", err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -27,6 +39,7 @@ export default function CoursesPage() {
                 courseTitle: formData.get("courseTitle") as string,
             });
             (e.target as HTMLFormElement).reset();
+            fetchCourses();
         } catch (err) {
             alert(err instanceof Error ? err.message : "Failed to add course");
         } finally {
@@ -34,16 +47,17 @@ export default function CoursesPage() {
         }
     };
 
-    const handleDelete = async (id: Id<"courses">) => {
+    const handleDelete = async (id: string) => {
         if (!confirm("Delete this course? All associated sessions will also be deleted.")) return;
         try {
-            await removeCourse({ id });
+            await removeCourse(id);
+            fetchCourses();
         } catch (err) {
             alert(err instanceof Error ? err.message : "Failed to delete course");
         }
     };
 
-    if (courses === undefined) {
+    if (isLoading) {
         return (
             <div className="min-h-screen bg-surface flex items-center justify-center">
                 <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
@@ -117,14 +131,14 @@ export default function CoursesPage() {
                     ) : (
                         <div className="divide-y divide-border">
                             {courses.map((course: any) => (
-                                <div key={course._id} className="px-6 py-4 flex items-center justify-between hover:bg-surface-container/50 transition-colors">
+                                <div key={course.id} className="px-6 py-4 flex items-center justify-between hover:bg-surface-container/50 transition-colors">
                                     <div>
                                         <h3 className="text-[14.5px] font-[450] text-foreground">{course.courseCode}</h3>
                                         <p className="text-small text-muted-foreground mt-0.5">{course.courseTitle}</p>
                                         <p className="text-[11px] text-muted-foreground/60 mt-1">{course.sessionCount} session(s)</p>
                                     </div>
                                     <button
-                                        onClick={() => handleDelete(course._id)}
+                                        onClick={() => handleDelete(course.id)}
                                         className="p-2.5 rounded-full hover:bg-destructive/8 text-muted-foreground hover:text-destructive transition-colors"
                                     >
                                         <Trash2 className="w-4 h-4" />
