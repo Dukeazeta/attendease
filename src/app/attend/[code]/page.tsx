@@ -119,7 +119,7 @@ function AttendContent({ shareCode }: { shareCode: string }) {
 
         const formData = new FormData(e.currentTarget);
         try {
-            await submitAttendance({
+            const result = await submitAttendance({
                 sessionId: session.id,
                 matricNumber: formData.get("matricNumber") as string,
                 studentName: formData.get("studentName") as string,
@@ -127,9 +127,15 @@ function AttendContent({ shareCode }: { shareCode: string }) {
                 longitude: coords?.lng ?? 0,
                 deviceFingerprint,
             });
-            setStep("success");
+
+            if (result.error) {
+                setError(result.error);
+                setStep("error");
+            } else {
+                setStep("success");
+            }
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Failed to sign attendance");
+            setError("A connection error occurred. Please try again.");
             setStep("error");
         } finally { setIsSubmitting(false); }
     };

@@ -49,69 +49,74 @@ export async function submitAttendance(args: {
     longitude: number;
     deviceFingerprint: string;
 }) {
-    // Get the session
-    const session = await db.query.attendanceSessions.findFirst({
-        where: eq(attendanceSessions.id, args.sessionId),
-    });
+    try {
+        // Get the session
+        const session = await db.query.attendanceSessions.findFirst({
+            where: eq(attendanceSessions.id, args.sessionId),
+        });
 
-    if (!session) throw new Error("Session not found");
-    if (!session.isActive) throw new Error("This session has ended");
-    if (session.endTime.getTime() < Date.now()) throw new Error("This session has expired");
+        if (!session) return { error: "Session not found" };
+        if (!session.isActive) return { error: "This session has ended" };
+        if (session.endTime.getTime() < Date.now()) return { error: "This session has expired" };
 
-    // Get location
-    const location = await db.query.locations.findFirst({
-        where: eq(locations.id, session.locationId),
-    });
+        // Get location
+        const location = await db.query.locations.findFirst({
+            where: eq(locations.id, session.locationId),
+        });
 
-    if (!location) throw new Error("Session location not found");
-    if (!args.deviceFingerprint) throw new Error("Device verification failed.");
+        if (!location) return { error: "Session location not found" };
+        if (!args.deviceFingerprint) return { error: "Device verification failed." };
 
-    const matricUpper = args.matricNumber.toUpperCase();
+        const matricUpper = args.matricNumber.toUpperCase();
 
-    // Check existing
-    const existingByMatric = await db.query.attendances.findFirst({
-        where: and(
-            eq(attendances.sessionId, args.sessionId),
-            eq(attendances.matricNumber, matricUpper)
-        ),
-    });
-    if (existingByMatric) throw new Error("You have already signed attendance");
+        // Check existing
+        const existingByMatric = await db.query.attendances.findFirst({
+            where: and(
+                eq(attendances.sessionId, args.sessionId),
+                eq(attendances.matricNumber, matricUpper)
+            ),
+        });
+        if (existingByMatric) return { error: "You have already signed attendance" };
 
-    const existingByDevice = await db.query.attendances.findFirst({
-        where: and(
-            eq(attendances.sessionId, args.sessionId),
-            eq(attendances.deviceFingerprint, args.deviceFingerprint)
-        ),
-    });
-    if (existingByDevice) throw new Error("This device has already been used.");
+        const existingByDevice = await db.query.attendances.findFirst({
+            where: and(
+                eq(attendances.sessionId, args.sessionId),
+                eq(attendances.deviceFingerprint, args.deviceFingerprint)
+            ),
+        });
+        if (existingByDevice) return { error: "This device has already been used for this session." };
 
-    // Geo validation
-    const distance = calculateDistance(
-        args.latitude,
-        args.longitude,
-        location.latitude,
-        location.longitude
-    );
+        // Geo validation
+        const distance = calculateDistance(
+            args.latitude,
+            args.longitude,
+            location.latitude,
+            location.longitude
+        );
 
-    if (distance > location.radiusMeters) {
-        throw new Error(`Too far away (${Math.round(distance)}m).`);
+        if (distance > location.radiusMeters) {
+            return { error: `Too far away (${Math.round(distance)}m). You must be within the class premises.` };
+        }
+
+        const id = nanoid();
+        await db.insert(attendances).values({
+            id,
+            sessionId: args.sessionId,
+            matricNumber: matricUpper,
+            studentName: args.studentName,
+            signedLatitude: args.latitude,
+            signedLongitude: args.longitude,
+            deviceFingerprint: args.deviceFingerprint,
+            isManualEntry: false,
+            signedAt: new Date(),
+        });
+
+        revalidatePath(`/sessions/${args.sessionId}`);
+        return { success: true, id };
+    } catch (err) {
+        console.error("Attendance submission error:", err);
+        return { error: "An unexpected error occurred. Please try again." };
     }
-
-    const id = nanoid();
-    await db.insert(attendances).values({
-        id,
-        sessionId: args.sessionId,
-        matricNumber: matricUpper,
-        studentName: args.studentName,
-        signedLatitude: args.latitude,
-        signedLongitude: args.longitude,
-        deviceFingerprint: args.deviceFingerprint,
-        isManualEntry: false,
-        signedAt: new Date(),
-    });
-
-    revalidatePath(`/sessions/${args.sessionId}`);
-    return id;
 }
 
 // Add manual attendance (Course Rep)
