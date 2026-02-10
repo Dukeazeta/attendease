@@ -1,54 +1,101 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AttendEase
 
-## Getting Started
+**AttendEase** is a production-grade, anti-cheat attendance management system designed for academic and corporate environments. It leverages geolocation, device fingerprinting, and dynamic session management to ensure attendance integrity and streamline the tracking process.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## ✨ Key Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- 🏢 **Pre-Stored Venues**: Define class venues with specific GPS coordinates and geofencing radii.
+- 📍 **Geolocation Verification**: Students can only sign attendance if they are within the authorized venue radius.
+- 🛡️ **Anti-Cheat Fingerprinting**: Prevents multiple signings from the same device or browser.
+- 🏃 **Dynamic Sessions**: Course representatives can start and end attendance sessions with unique share codes.
+- 📊 **Real-Time Tracking**: Monitor attendance logs as they happen with manual entry options for edge cases.
+- 🔐 **Secure Authentication**: Built-in authentication for Course Reps and Students using NextAuth.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Framework**: [Next.js 15+](https://nextjs.org/) (App Router, Server Components)
+- **Database**: [Turso (libSQL)](https://turso.tech/) with [Drizzle ORM](https://orm.drizzle.team/)
+- **Authentication**: [NextAuth.js v5](https://authjs.dev/)
+- **Styling**: [Tailwind CSS 4](https://tailwindcss.com/)
+- **Animation**: [Framer Motion](https://www.framer.com/motion/)
+- **Fingerprinting**: [@fingerprintjs/fingerprintjs](https://fingerprintjs.com/)
 
-## Convex Auth setup (`JWT_PRIVATE_KEY`)
+---
 
-If you see this error during sign-in:
+## 🚀 Getting Started
 
-- `Missing environment variable \`JWT_PRIVATE_KEY\``
+### Prerequisites
 
-generate a key with:
+- [Node.js](https://nodejs.org/) (Latest LTS)
+- [pnpm](https://pnpm.io/) (Recommended)
 
-```bash
-npm run auth:generate-jwt-key
-```
+### Installation
 
-Then copy the generated single-line value into your Convex environment:
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/Dukeazeta/attendease.git
+   cd attendease
+   ```
 
-```bash
-npx convex env set JWT_PRIVATE_KEY "<paste-single-line-key-here>"
-```
+2. **Install dependencies**:
+   ```bash
+   pnpm install
+   ```
 
-## Learn More
+3. **Set up Environment Variables**:
+   Create a `.env` file in the root directory and add the following:
+   ```env
+   # Database
+   DATABASE_URL="file:local.db"
+   
+   # Auth
+   AUTH_SECRET="your-next-auth-secret" # Generate with `npx auth secret`
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+4. **Initialize the Database**:
+   ```bash
+   pnpm db:push
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+5. **Run the Development Server**:
+   ```bash
+   pnpm dev
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the results.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🔒 Security Setup
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+If you see an error regarding `JWT_PRIVATE_KEY` during setup:
+
+1. **Generate the key**:
+   ```bash
+   pnpm auth:generate-jwt-key
+   ```
+2. **Copy the result** and add it to your environment variables or platform settings.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## ⚖️ License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+
+Built with ❤️ by [Dukeazeta](https://github.com/Dukeazeta)
