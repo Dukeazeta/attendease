@@ -20,6 +20,24 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Convex Auth setup (`JWT_PRIVATE_KEY`)
+
+If you see this error during sign-in:
+
+- `Missing environment variable \`JWT_PRIVATE_KEY\``
+
+generate a key with:
+
+```bash
+npm run auth:generate-jwt-key
+```
+
+Then copy the generated single-line value into your Convex environment:
+
+```bash
+npx convex env set JWT_PRIVATE_KEY "<paste-single-line-key-here>"
+```
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
