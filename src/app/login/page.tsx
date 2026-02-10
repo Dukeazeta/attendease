@@ -1,19 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuthActions } from "@convex-dev/auth/react";
+import { useConvexAuth } from "convex/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Activity } from "lucide-react";
 import { motion } from "framer-motion";
+import { getErrorMessage } from "@/lib/convex-error";
 
 export default function LoginPage() {
     const router = useRouter();
     const { signIn } = useAuthActions();
+    const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    useEffect(() => {
+        if (!isAuthLoading && isAuthenticated) {
+            router.replace("/dashboard");
+        }
+    }, [isAuthLoading, isAuthenticated, router]);
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsLoading(true);
@@ -25,9 +34,10 @@ export default function LoginPage() {
 
         try {
             await signIn("password", { email, password, flow: "signIn" });
-            router.push("/dashboard");
+            router.refresh();
+            router.replace("/dashboard");
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Invalid email or password");
+            setError(getErrorMessage(err, "Invalid email or password"));
         } finally {
             setIsLoading(false);
         }
