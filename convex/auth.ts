@@ -1,22 +1,24 @@
-import { generateKeyPairSync } from "node:crypto";
 import { Password } from "@convex-dev/auth/providers/Password";
 import { convexAuth } from "@convex-dev/auth/server";
 import { DataModel } from "./_generated/dataModel";
 
-function ensureJwtPrivateKeyForDev() {
+function ensureJwtPrivateKeyConfigured() {
   if (process.env.JWT_PRIVATE_KEY) {
     return;
   }
 
-  if (process.env.NODE_ENV === "production") {
-    return;
-  }
-
-  const { privateKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
-  process.env.JWT_PRIVATE_KEY = privateKey.export({ type: "pkcs8", format: "pem" }).toString();
+  const environment = process.env.NODE_ENV === "production" ? "production" : "development";
+  throw new Error(
+    [
+      "Missing required environment variable `JWT_PRIVATE_KEY`.",
+      `Convex auth cannot start in ${environment} without a signing key.`,
+      "Generate one and set it before running Convex:",
+      "openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048",
+    ].join(" ")
+  );
 }
 
-ensureJwtPrivateKeyForDev();
+ensureJwtPrivateKeyConfigured();
 
 function getStringParam(params: Record<string, unknown>, key: string) {
   const value = params[key];
