@@ -3,7 +3,7 @@
 import { useState, useEffect, use } from "react";
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
 import { useQuery, useMutation } from "convex/react";
-import { api } from "../../../../../convex/_generated/api";
+import { api } from "@/../convex/_generated/api";
 
 // Haversine formula to calculate distance between two points
 function calculateDistance(
@@ -43,33 +43,33 @@ function AttendContent({ shareCode }: { shareCode: string }) {
         try {
             const fp = await FingerprintJS.load();
             const result = await fp.get();
-            
+
             // Get the components for hardware-focused signals
             const c = result.components;
-            
+
             // Extract hardware-focused attributes using type-safe access
             // These signals are more consistent across browsers on the same device
             const hardwareSignals = {
                 // Screen properties (hardware-bound)
                 screenResolution: "screenResolution" in c ? c.screenResolution : null,
                 colorDepth: "colorDepth" in c ? c.colorDepth : null,
-                
+
                 // Canvas fingerprint (GPU-based, mostly hardware-bound)
                 canvas: "canvas" in c ? c.canvas : null,
-                
+
                 // Audio fingerprint (hardware-bound)
                 audio: "audio" in c ? c.audio : null,
-                
+
                 // System info
                 timezone: "timezone" in c ? c.timezone : null,
                 platform: "platform" in c ? c.platform : null,
                 hardwareConcurrency: "hardwareConcurrency" in c ? c.hardwareConcurrency : null,
                 deviceMemory: "deviceMemory" in c ? c.deviceMemory : null,
-                
+
                 // WebGL info (if available via webGlBasics)
                 webGlBasics: "webGlBasics" in c ? c.webGlBasics : null,
             };
-            
+
             // Create a hash from these signals
             const signalString = JSON.stringify(hardwareSignals);
             const encoder = new TextEncoder();
@@ -77,14 +77,14 @@ function AttendContent({ shareCode }: { shareCode: string }) {
             const hashBuffer = await crypto.subtle.digest("SHA-256", data);
             const hashArray = Array.from(new Uint8Array(hashBuffer));
             const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-            
+
             // Also store a backup ID in localStorage for additional persistence
             let storedId = localStorage.getItem("attendease_device_id");
             if (!storedId) {
                 storedId = crypto.randomUUID();
                 localStorage.setItem("attendease_device_id", storedId);
             }
-            
+
             // Combine hardware hash with stored ID for robustness
             const combined = `${hashHex.slice(0, 32)}_${storedId.slice(0, 8)}`;
             return combined;
@@ -135,6 +135,11 @@ function AttendContent({ shareCode }: { shareCode: string }) {
                 setCoords({ lat: latitude, lng: longitude });
 
                 // Calculate distance from class location
+                if (!session.location) {
+                    setError("Session location data is missing.");
+                    setStep("error");
+                    return;
+                }
                 const dist = calculateDistance(
                     latitude,
                     longitude,
@@ -192,7 +197,7 @@ function AttendContent({ shareCode }: { shareCode: string }) {
 
         try {
             await submitAttendance({
-                sessionId: session._id,
+                sessionId: session.id,
                 matricNumber,
                 studentName,
                 latitude: coords?.lat ?? 0,
@@ -255,15 +260,15 @@ function AttendContent({ shareCode }: { shareCode: string }) {
                         AttendEase
                     </div>
                     <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">
-                        {session.course.courseCode}
+                        {session.course?.courseCode}
                     </h1>
-                    <p className="text-[var(--text-secondary)]">{session.course.courseTitle}</p>
+                    <p className="text-[var(--text-secondary)]">{session.course?.courseTitle}</p>
                     <p className="text-[var(--text-muted)] text-sm mt-2 flex items-center justify-center gap-2">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        {session.location.name}
+                        {session.location?.name}
                     </p>
                 </div>
 
@@ -394,6 +399,6 @@ export default function AttendPage({
     params: Promise<{ code: string }>;
 }) {
     const { code } = use(params);
-    
+
     return <AttendContent shareCode={code} />;
 }

@@ -4,10 +4,10 @@ import Link from "next/link";
 import { useEffect, useState, useRef, use } from "react";
 import QRCode from "qrcode";
 import { useQuery, useMutation } from "convex/react";
-import { api } from "../../../../../convex/_generated/api";
+import { api } from "@/../convex/_generated/api";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { redirect, useRouter } from "next/navigation";
-import type { Id } from "../../../../../convex/_generated/dataModel";
+import type { Id } from "@/../convex/_generated/dataModel";
 
 interface Attendance {
     _id: Id<"attendances">;
@@ -44,12 +44,12 @@ function SessionContent({ sessionId }: { sessionId: Id<"attendanceSessions"> }) 
     const removeAttendanceMutation = useMutation(api.attendance.remove);
 
     // Sort attendances alphabetically by student name
-    const sortedAttendances = attendances 
+    const sortedAttendances = attendances
         ? [...attendances].sort((a, b) => a.studentName.localeCompare(b.studentName))
         : [];
 
     // Generate share URL
-    const shareUrl = typeof window !== "undefined" 
+    const shareUrl = typeof window !== "undefined"
         ? `${window.location.origin}/attend/${session?.shareCode}`
         : "";
 
@@ -252,8 +252,8 @@ function SessionContent({ sessionId }: { sessionId: Id<"attendanceSessions"> }) 
                     <div className="flex items-center gap-3">
                         <span
                             className={`px-3 py-1 rounded-full text-xs font-medium ${session.isActive
-                                    ? "bg-[var(--success)]/10 text-[var(--success)] border border-[var(--success)]/20"
-                                    : "bg-[var(--bg-elevated)] text-[var(--text-muted)] border border-[var(--border-default)]"
+                                ? "bg-[var(--success)]/10 text-[var(--success)] border border-[var(--success)]/20"
+                                : "bg-[var(--bg-elevated)] text-[var(--text-muted)] border border-[var(--border-default)]"
                                 }`}
                         >
                             {session.isActive ? "Active" : "Ended"}

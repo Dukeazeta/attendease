@@ -4,10 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useQuery, useMutation } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
+import { api } from "@/../convex/_generated/api";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { redirect } from "next/navigation";
-import type { Id } from "../../../../convex/_generated/dataModel";
+import type { Id } from "@/../convex/_generated/dataModel";
 
 function NewSessionContent() {
     const router = useRouter();
