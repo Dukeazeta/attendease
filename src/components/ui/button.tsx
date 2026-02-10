@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { motion, HTMLMotionProps } from "framer-motion";
+import { motion, type HTMLMotionProps } from "framer-motion";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -9,10 +9,15 @@ function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
+<<<<<<< HEAD
 export interface ButtonProps extends HTMLMotionProps<"button"> {
+=======
+export interface ButtonProps extends Omit<HTMLMotionProps<"button">, "children"> {
+>>>>>>> 6e853762c01ab84176b6680c26d720442b2c8136
     variant?: "primary" | "secondary" | "outline" | "ghost" | "link";
     size?: "default" | "sm" | "lg" | "icon";
     isLoading?: boolean;
+    children?: React.ReactNode;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -44,7 +49,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
                     sizeStyles[size],
                     className
                 )}
-                disabled={isLoading}
+                disabled={isLoading || props.disabled}
                 {...props}
             >
                 {isLoading && (
