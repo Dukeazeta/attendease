@@ -2,208 +2,257 @@
 
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Shield, MapPin, QrCode, Smartphone, CheckCircle, Zap } from "lucide-react";
+import { ArrowRight, Shield, MapPin, QrCode, Smartphone, CheckCircle, Zap, Activity, Globe, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const { scrollYProgress } = useScroll();
-  const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
+  const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 0.2], [1, 0.9]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans overflow-hidden selection:bg-foreground selection:text-background">
+    <div className="min-h-screen bg-background text-foreground selection:bg-accent selection:text-white overflow-x-hidden bg-grain">
+      {/* Cinematic Background Elements */}
+      <div className="fixed inset-0 kinetic-mesh" />
+      <div className="fixed top-[-10%] left-[-10%] glow-orb" />
+      <div className="fixed bottom-[-10%] right-[-10%] glow-orb" style={{ "--accent": "#8b5cf6", animationDelay: "-2s" } as any} />
+
       {/* Navbar */}
-      {/* Navbar - Brutalist */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 md:px-12 bg-background border-b-2 border-foreground">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 bg-foreground"></div>
-          <span className="text-xl font-bold tracking-tighter uppercase">Attendease.</span>
+      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 md:px-12 glass border-b-0 m-4 rounded-2xl max-w-7xl mx-auto backdrop-blur-2xl">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-purple-600 flex items-center justify-center shadow-lg shadow-accent/20">
+            <Activity className="w-5 h-5 text-white" />
+          </div>
+          <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">AttendEase</span>
+        </div>
+        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/60">
+          <Link href="#features" className="hover:text-white transition-colors uppercase tracking-widest">Technology</Link>
+          <Link href="#security" className="hover:text-white transition-colors uppercase tracking-widest">Security</Link>
         </div>
         <div className="flex items-center gap-4">
           <Link href="/login">
-            <Button variant="ghost" className="hidden md:inline-flex hover:bg-foreground hover:text-background rounded-none border border-transparent hover:border-foreground transition-all duration-0">Sign In</Button>
+            <Button variant="ghost" className="text-white/60 hover:text-white">Sign In</Button>
           </Link>
           <Link href="/register">
-            <Button className="rounded-none border-2 border-foreground bg-foreground text-background hover:bg-background hover:text-foreground brutal-shadow transition-all duration-0 active:translate-x-1 active:translate-y-1 active:shadow-none">
+            <Button variant="primary" className="rounded-full px-6">
               Get Started
             </Button>
           </Link>
         </div>
       </nav>
 
-      {/* Hero Section - Swiss Brutalist */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-32 pb-20 overflow-hidden border-b-2 border-foreground">
-        {/* Grid Background */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#000_1px,transparent_1px),linear-gradient(to_bottom,#000_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-10 pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto text-center z-10 space-y-12">
+      <main>
+        {/* Kinetic Hero Section */}
+        <section className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-20">
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
+            style={{ opacity, scale }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "circOut" }}
-            className="flex flex-col items-center"
+            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-7xl mx-auto text-center space-y-10"
           >
-            <div className="border-2 border-foreground px-4 py-1 mb-8 uppercase font-mono text-sm tracking-widest bg-background brutal-shadow-sm">
-              v2.0 System Online
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass text-[10px] uppercase tracking-[0.3em] font-bold text-accent mb-4 border-accent/20">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+              </span>
+              System Status: Active
             </div>
 
-            <h1 className="text-7xl md:text-9xl lg:text-[10rem] font-black tracking-tighter leading-[0.85] text-foreground uppercase mix-blend-difference">
-              ATTENDANCE
-              <br />
-              <span className="outline-text text-transparent bg-clip-text stroke-foreground" style={{ WebkitTextStroke: "2px var(--foreground)" }}>
-                REDEFINED
+            <h1 className="text-6xl md:text-9xl font-bold tracking-tighter leading-[0.9] text-white">
+              <span className="block overflow-hidden">
+                <motion.span
+                  initial={{ y: "100%" }}
+                  animate={{ y: 0 }}
+                  transition={{ delay: 0.2, duration: 1, ease: [0.22, 1, 0.36, 1] }}
+                  className="block"
+                >
+                  PRESENCE
+                </motion.span>
+              </span>
+              <span className="block overflow-hidden">
+                <motion.span
+                  initial={{ y: "100%" }}
+                  animate={{ y: 0 }}
+                  transition={{ delay: 0.4, duration: 1, ease: [0.22, 1, 0.36, 1] }}
+                  className="block text-transparent bg-clip-text bg-gradient-to-b from-white to-white/20"
+                >
+                  VERIFIED
+                </motion.span>
               </span>
             </h1>
-          </motion.div>
 
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.8 }}
-            className="text-xl md:text-2xl font-mono text-foreground max-w-3xl mx-auto border-l-4 border-foreground pl-6 text-left"
-          >
-            The ultimate anti-cheat solution.
-            <br />
-            <span className="font-bold bg-foreground text-background px-1">GPS-LOCKED.</span> <span className="font-bold bg-foreground text-background px-1">QR-ENABLED.</span> <span className="font-bold bg-foreground text-background px-1">STRICTLY VERIFIED.</span>
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.8 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-8"
-          >
-            <Link href="/register">
-              <Button size="lg" className="h-16 px-10 text-xl font-bold rounded-none border-2 border-foreground bg-foreground text-background hover:bg-background hover:text-foreground brutal-shadow-lg transition-all duration-0 active:translate-x-1 active:translate-y-1 active:shadow-none uppercase tracking-tight">
-                Start Now
-              </Button>
-            </Link>
-            <Link href="#features">
-              <Button variant="outline" size="lg" className="h-16 px-10 text-xl font-bold rounded-none border-2 border-foreground bg-background text-foreground hover:bg-foreground hover:text-background brutal-shadow-lg transition-all duration-0 active:translate-x-1 active:translate-y-1 active:shadow-none uppercase tracking-tight">
-                Explore Features
-              </Button>
-            </Link>
-          </motion.div>
-        </div>
-
-        {/* Decorative Elements - Hard Geometric */}
-        <div className="absolute left-0 bottom-0 w-32 h-32 border-t-2 border-r-2 border-foreground hidden lg:block"></div>
-        <div className="absolute right-0 top-32 w-24 h-24 border-b-2 border-l-2 border-foreground hidden lg:block"></div>
-
-        <div className="absolute top-1/2 left-10 -translate-y-1/2 hidden xl:block">
-          <div className="flex flex-col gap-2">
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className="w-4 h-4 bg-foreground"></div>
-            ))}
-          </div>
-        </div>
-
-      </section>
-
-      {/* Marquee / Social Proof - Brutalist */}
-      <div className="border-y-2 border-foreground py-12 bg-background relative overflow-hidden">
-        <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
-           <div className="text-[20vw] font-black leading-none tracking-tighter mix-blend-difference">TRUST</div>
-        </div>
-        <div className="container mx-auto px-6 relative z-10">
-          <p className="text-xs font-mono font-bold text-foreground uppercase tracking-widest mb-8 text-center border-b border-foreground/20 pb-4 w-fit mx-auto">Trusted by Departments at</p>
-          <div className="flex flex-wrap justify-center gap-12 md:gap-24 opacity-80">
-            {['ENGINEERING', 'SCIENCES', 'ARTS', 'LAW', 'MEDICINE'].map((dept) => (
-              <span key={dept} className="text-2xl md:text-4xl font-black tracking-tighter uppercase relative group cursor-default">
-                  {dept}
-                  <span className="absolute -bottom-1 left-0 w-0 h-1 bg-foreground transition-all duration-300 group-hover:w-full"></span>
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Features Grid - Brutalist */}
-      <section id="features" className="py-32 px-6 container mx-auto relative">
-         <div className="absolute left-0 top-0 text-9xl font-black text-foreground/5 -z-10 pointer-events-none rotate-90 origin-top-left translate-x-24 translate-y-24">FEATURES</div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-0 border-2 border-foreground bg-foreground">
-          {[
-            {
-              icon: MapPin,
-              title: "GPS-LOCKED",
-              desc: "Precise coordinates required. No spoofing allowed."
-            },
-            {
-              icon: QrCode,
-              title: "DYNAMIC QR",
-              desc: "Rotates every 5 seconds. Screenshot proof."
-            },
-            {
-              icon: Smartphone,
-              title: "DEVICE ID",
-              desc: "One student, one phone. Hardware-level binding."
-            }
-          ].map((feature, i) => (
-            <div
-              key={i}
-              className="group p-12 bg-background border-b-2 md:border-b-0 md:border-r-2 border-foreground last:border-0 hover:bg-foreground hover:text-background transition-colors duration-200 flex flex-col justify-between h-full"
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8, duration: 1 }}
+              className="text-lg md:text-xl text-white/50 max-w-2xl mx-auto font-light leading-relaxed tracking-wide"
             >
-              <div>
-                  <div className="mb-6 inline-flex p-4 border-2 border-foreground bg-background text-foreground group-hover:bg-background group-hover:text-foreground brutal-shadow-sm transition-all duration-200">
-                    <feature.icon className="h-8 w-8" />
-                  </div>
-                  <h3 className="text-3xl font-black mb-4 tracking-tighter uppercase">{feature.title}</h3>
-                  <p className="text-lg font-mono text-muted-foreground group-hover:text-background/80 leading-relaxed border-t-2 border-current pt-4">{feature.desc}</p>
+              Anti-cheat attendance infrastructure for the modern classroom.
+              Powered by hardware-binding and multi-layer verification.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1, duration: 1 }}
+              className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-4"
+            >
+              <Link href="/register">
+                <Button size="lg" className="rounded-full min-w-[200px] h-14 text-base font-bold group">
+                  Deploy Now
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </Link>
+              <Link href="#features">
+                <Button variant="glass" size="lg" className="rounded-full min-w-[200px] h-14 text-base border-white/5">
+                  See Technology
+                </Button>
+              </Link>
+            </motion.div>
+          </motion.div>
+
+          {/* Floating UI Elements for Depth */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <motion.div
+              animate={{ y: [0, -20, 0] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute top-1/4 right-[10%] w-64 h-64 glass rounded-3xl opacity-20 rotate-12"
+            />
+            <motion.div
+              animate={{ y: [0, 20, 0] }}
+              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute bottom-1/4 left-[5%] w-48 h-48 glass rounded-full opacity-10"
+            />
+          </div>
+        </section>
+
+        {/* Features - High Tech Minimalist */}
+        <section id="features" className="py-32 px-6 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                icon: MapPin,
+                title: "Geotagged",
+                desc: "High-precision GPS locking ensures students are physically present in the hall.",
+                color: "text-blue-500"
+              },
+              {
+                icon: QrCode,
+                title: "Dynamic QR",
+                desc: "Ephemeral QR codes prevent sharing. Real-time regeneration every 5 seconds.",
+                color: "text-purple-500"
+              },
+              {
+                icon: Smartphone,
+                title: "Biometric",
+                desc: "Hardware-level device binding prevents proxy signing and multi-account abuse.",
+                color: "text-emerald-500"
+              }
+            ].map((feature, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.2 }}
+                className="group glass p-10 rounded-[2rem] hover:bg-white/5 transition-all duration-500 border-white/5 hover:border-white/10"
+              >
+                <div className={`mb-8 w-14 h-14 rounded-2xl glass flex items-center justify-center shadow-lg shadow-black/50`}>
+                  <feature.icon className={`h-6 w-6 ${feature.color}`} />
+                </div>
+                <h3 className="text-2xl font-semibold mb-4 text-white tracking-tight">{feature.title}</h3>
+                <p className="text-white/40 leading-relaxed font-light">{feature.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* Tech Stack - Logos / Identity */}
+        <section className="py-20 border-y border-white/5 overflow-hidden">
+          <div className="max-w-7xl mx-auto px-6">
+            <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/30 text-center mb-12">Engineered with Precision</p>
+            <div className="flex flex-wrap justify-center gap-x-20 gap-y-10 items-center opacity-30 grayscale hover:grayscale-0 transition-all duration-700">
+              {['CONVEX.DB', 'NEXT.JS', 'TAILWIND', 'LUCIDE', 'FRAMER.MOTION'].map((tech) => (
+                <span key={tech} className="text-sm font-bold tracking-[0.2em]">{tech}</span>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Security / Proof Section */}
+        <section id="security" className="py-32 px-6">
+          <div className="max-w-7xl mx-auto glass p-12 md:p-24 rounded-[3rem] relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-accent/10 to-transparent pointer-events-none" />
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+              <div className="space-y-8">
+                <h2 className="text-5xl md:text-7xl font-bold tracking-tight text-white leading-none">
+                  Security is not an <span className="text-accent underline decoration-accent/30 underline-offset-8">option</span>.
+                </h2>
+                <p className="text-xl text-white/40 font-light leading-relaxed">
+                  Our multi-factor verification pipeline ensures that every record is legitimate.
+                  From device fingerprinting to network analysis, we've built a fortress around your attendance data.
+                </p>
+                <div className="flex flex-col gap-4">
+                  {[
+                    { icon: Lock, label: "End-to-end encrypted tunnels" },
+                    { icon: Shield, label: "AES-256 data rest encryption" },
+                    { icon: Globe, label: "Distributed edge verification" }
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-center gap-4 text-white/60">
+                      <div className="w-8 h-8 glass rounded-full flex items-center justify-center">
+                        <item.icon className="w-4 h-4 text-accent" />
+                      </div>
+                      <span className="text-sm tracking-wide">{item.label}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="mt-8 text-right opacity-0 group-hover:opacity-100 transition-opacity duration-200 font-bold text-lg">
-                  // 0{i+1}
+              <div className="relative">
+                <div className="aspect-square glass rounded-[2.5rem] flex items-center justify-center p-12 relative group">
+                  <div className="absolute inset-0 bg-accent/5 rounded-[2.5rem] animate-pulse-slow" />
+                  <Shield className="w-32 h-32 text-accent opacity-50 group-hover:scale-110 transition-transform duration-700" />
+                </div>
               </div>
             </div>
-          ))}
-        </div>
-      </section>
+          </div>
+        </section>
 
-      {/* CTA Section - Brutalist */}
-      <section className="py-32 bg-foreground text-background relative overflow-hidden border-y-2 border-background">
-        <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.05)_25%,rgba(255,255,255,0.05)_50%,transparent_50%,transparent_75%,rgba(255,255,255,0.05)_75%,rgba(255,255,255,0.05)_100%)] bg-[size:20px_20px] opacity-20"></div>
-        
-        <div className="container mx-auto px-6 text-center relative z-10">
-          <h2 className="text-6xl md:text-8xl font-black tracking-tighter mb-8 uppercase leading-none">
-            SECURE YOUR <br/> CLASS NOW.
-          </h2>
-          <p className="text-xl md:text-2xl font-mono text-background/80 max-w-2xl mx-auto mb-12 border-2 border-background p-6">
-            Join the department revolutionizing academic integrity.
-            <br/>
-            NO HARDWARE. NO DELAYS. NO EXCUSES.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-6">
+        {/* Final Call to Action */}
+        <section className="py-40 px-6 text-center">
+          <div className="max-w-3xl mx-auto space-y-12">
+            <h2 className="text-5xl md:text-8xl font-bold tracking-tighter text-white">
+              Ready to Upgrade?
+            </h2>
+            <p className="text-xl text-white/40 font-light">
+              Onboard your department in minutes. No complex hardware required.
+            </p>
             <Link href="/register">
-              <Button size="lg" className="h-20 px-12 text-2xl font-bold rounded-none bg-background text-foreground hover:bg-background hover:scale-105 border-2 border-transparent transition-transform duration-200 brutal-shadow-lg uppercase">
-                Initialize System <Zap className="ml-2 h-6 w-6" />
+              <Button size="lg" className="h-20 px-16 text-xl rounded-full bg-white text-black hover:bg-white/90 shadow-[0_0_50px_rgba(255,255,255,0.2)]">
+                Launch System
               </Button>
             </Link>
           </div>
-        </div>
-      </section>
+        </section>
+      </main>
 
-      {/* Footer - Brutalist */}
-      <footer className="py-12 bg-background border-t-4 border-foreground relative">
-        <div className="absolute top-0 left-10 w-4 h-4 bg-foreground -translate-y-1/2 rotate-45"></div>
-        
-        <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-end gap-6">
-          <div className="flex flex-col gap-2">
-             <div className="flex items-center gap-2 mb-2">
-                 <div className="w-8 h-8 bg-foreground"></div>
-                 <span className="text-2xl font-black tracking-tighter uppercase">ATTENDEASE.</span>
-             </div>
-             <p className="text-sm font-mono font-bold max-w-xs uppercase">
-                 The standard for verifyable academic presence.
-             </p>
+      {/* Footer */}
+      <footer className="py-12 border-t border-white/5">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-6 rounded bg-white/10 flex items-center justify-center">
+              <Activity className="w-3 h-3 text-white" />
+            </div>
+            <span className="text-sm font-bold tracking-tight opacity-60">AttendEase</span>
           </div>
-          
-          <div className="flex flex-col items-end gap-4">
-              <div className="flex gap-8 text-lg font-bold uppercase tracking-tight">
-                <a href="#" className="hover:underline decoration-2 underline-offset-4">Privacy</a>
-                <a href="#" className="hover:underline decoration-2 underline-offset-4">Terms</a>
-                <a href="#" className="hover:underline decoration-2 underline-offset-4">Contact</a>
-              </div>
-              <p className="text-xs font-mono text-muted-foreground uppercase">© 2026 Code of Conduct.</p>
+
+          <div className="flex gap-12 text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">
+            <a href="#" className="hover:text-accent transition-colors">Privacy</a>
+            <a href="#" className="hover:text-accent transition-colors">Infrastructure</a>
+            <a href="#" className="hover:text-accent transition-colors">Contact</a>
           </div>
+
+          <p className="text-[10px] font-medium text-white/20 uppercase tracking-widest">© 2026 Antigravity Systems</p>
         </div>
       </footer>
     </div>

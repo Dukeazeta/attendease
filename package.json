@@ -39,5 +39,10 @@
     "qrcode": "^1.5.4",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "@convex-dev/auth@0.0.71": "patches/@convex-dev__auth@0.0.71.patch"
+    }
   }
 }

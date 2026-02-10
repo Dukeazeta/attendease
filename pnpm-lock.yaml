@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  '@convex-dev/auth@0.0.71':
+    hash: 2dd8c96d76a7b22db053c7bc74ab1cb66003915f4299d47b1b7ae623bb4885ae
+    path: patches/@convex-dev__auth@0.0.71.patch
+
 importers:
 
   .:
@@ -13,7 +18,7 @@ importers:
         version: 0.37.0
       '@convex-dev/auth':
         specifier: ^0.0.71
-        version: 0.0.71(convex@1.31.7(react@19.2.3))(next@16.1.6(@babel/core@7.29.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)
+        version: 0.0.71(patch_hash=2dd8c96d76a7b22db053c7bc74ab1cb66003915f4299d47b1b7ae623bb4885ae)(convex@1.31.7(react@19.2.3))(next@16.1.6(@babel/core@7.29.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)
       '@fingerprintjs/fingerprintjs':
         specifier: ^5.0.1
         version: 5.0.1
@@ -2827,7 +2832,7 @@ snapshots:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.28.5
 
-  '@convex-dev/auth@0.0.71(convex@1.31.7(react@19.2.3))(next@16.1.6(@babel/core@7.29.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)':
+  '@convex-dev/auth@0.0.71(patch_hash=2dd8c96d76a7b22db053c7bc74ab1cb66003915f4299d47b1b7ae623bb4885ae)(convex@1.31.7(react@19.2.3))(next@16.1.6(@babel/core@7.29.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)':
     dependencies:
       '@auth/core': 0.31.0
       arctic: 1.9.2

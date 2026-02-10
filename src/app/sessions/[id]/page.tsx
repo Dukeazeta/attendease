@@ -8,6 +8,14 @@ import { api } from "@/../convex/_generated/api";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { redirect, useRouter } from "next/navigation";
 import type { Id } from "@/../convex/_generated/dataModel";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+    ArrowLeft, Activity, MapPin, Clock, Users,
+    QrCode, Copy, Check, LogOut, Download,
+    Plus, Edit3, Trash2, X, ShieldCheck, Zap
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Attendance {
     _id: Id<"attendances">;
@@ -35,7 +43,7 @@ function SessionContent({ sessionId }: { sessionId: Id<"attendanceSessions"> }) 
     const [addForm, setAddForm] = useState({ matricNumber: "", studentName: "" });
     const [editForm, setEditForm] = useState({ matricNumber: "", studentName: "" });
 
-    // Convex queries and mutations - REAL-TIME!
+    // Convex queries and mutations
     const session = useQuery(api.sessions.get, { id: sessionId });
     const attendances = useQuery(api.attendance.listBySession, { sessionId });
     const endSessionMutation = useMutation(api.sessions.endSession);
@@ -43,63 +51,48 @@ function SessionContent({ sessionId }: { sessionId: Id<"attendanceSessions"> }) 
     const updateAttendanceMutation = useMutation(api.attendance.update);
     const removeAttendanceMutation = useMutation(api.attendance.remove);
 
-    // Sort attendances alphabetically by student name
     const sortedAttendances = attendances
         ? [...attendances].sort((a, b) => a.studentName.localeCompare(b.studentName))
         : [];
 
-    // Generate share URL
     const shareUrl = typeof window !== "undefined"
         ? `${window.location.origin}/attend/${session?.shareCode}`
         : "";
 
-    // Generate QR code
+    // Generate QR code with Antigravity palette
     useEffect(() => {
         if (canvasRef.current && session?.isActive && shareUrl) {
             QRCode.toCanvas(canvasRef.current, shareUrl, {
-                width: 200,
+                width: 240,
                 margin: 2,
                 color: {
-                    dark: "#F4F4F5",
-                    light: "#141416",
+                    dark: "#ffffff",
+                    light: "#00000000", // Transparent background
                 },
             });
         }
     }, [shareUrl, session?.isActive]);
 
-    // Timer
+    // Timer logic
     useEffect(() => {
         if (!session) return;
-
         const updateTimeLeft = () => {
             const now = new Date();
             const end = new Date(session.endTime);
             const diff = end.getTime() - now.getTime();
-
             if (diff <= 0) {
-                setTimeLeft("Expired");
+                setTimeLeft("SESSION EXPIRED");
                 return;
             }
-
-            const hours = Math.floor(diff / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-            if (hours > 0) {
-                setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
-            } else if (minutes > 0) {
-                setTimeLeft(`${minutes}m ${seconds}s`);
-            } else {
-                setTimeLeft(`${seconds}s`);
-            }
+            const h = Math.floor(diff / (1000 * 60 * 60));
+            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((diff % (1000 * 60)) / 1000);
+            setTimeLeft(`${h > 0 ? h + 'h ' : ''}${m}m ${s < 10 ? '0' + s : s}s`);
         };
-
         updateTimeLeft();
         const interval = setInterval(updateTimeLeft, 1000);
         return () => clearInterval(interval);
     }, [session]);
-
-    // NO MORE POLLING! Convex provides real-time updates automatically
 
     const handleCopyLink = () => {
         navigator.clipboard.writeText(shareUrl);
@@ -108,38 +101,28 @@ function SessionContent({ sessionId }: { sessionId: Id<"attendanceSessions"> }) 
     };
 
     const handleEndSession = async () => {
-        if (confirm("Are you sure you want to end this session?")) {
+        if (confirm("Deactivate this attendance infrastructure? This cannot be reversed.")) {
             await endSessionMutation({ id: sessionId });
         }
     };
 
     const exportToCSV = () => {
         const headers = ["Student Name", "Matric Number"];
-        const rows = sortedAttendances.map((a) => [
-            a.studentName,
-            a.matricNumber,
-        ]);
-
-        const csvContent = [
-            headers.join(","),
-            ...rows.map((row) => row.join(",")),
-        ].join("\n");
-
+        const rows = sortedAttendances.map((a) => [a.studentName, a.matricNumber]);
+        const csvContent = [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
         const blob = new Blob([csvContent], { type: "text/csv" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `attendance-${session?.shareCode}.csv`;
+        a.download = `attendance-${session?.course?.courseCode}-${new Date().toLocaleDateString()}.csv`;
         a.click();
         URL.revokeObjectURL(url);
     };
 
-    // Manual Add Handler
     const handleAddStudent = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
         setModalError(null);
-
         try {
             await addManualMutation({
                 sessionId,
@@ -155,13 +138,11 @@ function SessionContent({ sessionId }: { sessionId: Id<"attendanceSessions"> }) 
         }
     };
 
-    // Edit Handler
     const handleEditStudent = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedAttendance) return;
         setIsSubmitting(true);
         setModalError(null);
-
         try {
             await updateAttendanceMutation({
                 id: selectedAttendance._id,
@@ -178,12 +159,10 @@ function SessionContent({ sessionId }: { sessionId: Id<"attendanceSessions"> }) 
         }
     };
 
-    // Delete Handler
     const handleDeleteStudent = async () => {
         if (!selectedAttendance) return;
         setIsSubmitting(true);
         setModalError(null);
-
         try {
             await removeAttendanceMutation({ id: selectedAttendance._id });
             setShowDeleteConfirm(false);
@@ -195,365 +174,313 @@ function SessionContent({ sessionId }: { sessionId: Id<"attendanceSessions"> }) 
         }
     };
 
-    // Open Edit Modal
-    const openEditModal = (attendance: Attendance) => {
-        setSelectedAttendance(attendance);
-        setEditForm({
-            matricNumber: attendance.matricNumber,
-            studentName: attendance.studentName,
-        });
-        setModalError(null);
-        setShowEditModal(true);
-    };
-
-    // Open Delete Confirm
-    const openDeleteConfirm = (attendance: Attendance) => {
-        setSelectedAttendance(attendance);
-        setModalError(null);
-        setShowDeleteConfirm(true);
-    };
-
-    // Loading state
     if (session === undefined || attendances === undefined) {
         return (
-            <div className="min-h-screen bg-[var(--bg-primary)] bg-grid-pattern bg-gradient-radial flex items-center justify-center">
-                <div className="w-8 h-8 border-4 border-[var(--accent-primary)] border-t-transparent rounded-full animate-spin"></div>
+            <div className="min-h-screen bg-background bg-grain flex items-center justify-center">
+                <div className="fixed inset-0 kinetic-mesh opacity-50" />
+                <div className="relative z-10 w-12 h-12 border-t-2 border-accent rounded-full animate-spin"></div>
             </div>
         );
     }
 
-    // Session not found
     if (session === null) {
-        router.push("/sessions");
+        router.push("/dashboard");
         return null;
     }
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] bg-grid-pattern bg-gradient-radial">
-            {/* Header */}
-            <header className="sticky top-0 z-50 border-b border-[var(--border-subtle)] bg-[var(--bg-primary)]/80 backdrop-blur-xl">
-                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <Link
-                            href="/sessions"
-                            className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                            </svg>
-                            Back
+        <div className="min-h-screen bg-background text-foreground bg-grain overflow-x-hidden relative">
+            <div className="fixed inset-0 kinetic-mesh opacity-30 pointer-events-none" />
+
+            {/* Mission Control Header */}
+            <header className="fixed top-0 left-0 right-0 z-50 glass m-4 rounded-2xl max-w-7xl mx-auto backdrop-blur-2xl">
+                <div className="px-6 py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-6">
+                        <Link href="/dashboard" className="p-2 glass rounded-xl hover:bg-white/10 transition-colors">
+                            <ArrowLeft className="w-4 h-4 text-white/50" />
                         </Link>
-                        <div className="h-5 w-px bg-[var(--border-default)]" />
+                        <div className="h-6 w-px bg-white/10" />
                         <div>
-                            <h1 className="text-lg font-bold text-[var(--text-primary)]">{session.course?.courseCode}</h1>
-                            <p className="text-xs text-[var(--text-secondary)]">{session.course?.courseTitle}</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <span
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${session.isActive
-                                ? "bg-[var(--success)]/10 text-[var(--success)] border border-[var(--success)]/20"
-                                : "bg-[var(--bg-elevated)] text-[var(--text-muted)] border border-[var(--border-default)]"
-                                }`}
-                        >
-                            {session.isActive ? "Active" : "Ended"}
-                        </span>
-                    </div>
-                </div>
-            </header>
-
-            <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-                {/* Session Info Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in opacity-0">
-                    <div className="card-industrial p-5">
-                        <p className="text-[var(--text-muted)] text-xs uppercase tracking-wider mb-1">Location</p>
-                        <p className="text-[var(--text-primary)] font-medium">{session.location?.name}</p>
-                        <p className="text-[var(--text-secondary)] text-sm">{session.location?.building || "—"}</p>
-                    </div>
-                    <div className="card-industrial p-5">
-                        <p className="text-[var(--text-muted)] text-xs uppercase tracking-wider mb-1">Time Remaining</p>
-                        <p className="text-[var(--text-primary)] font-medium font-mono">{timeLeft}</p>
-                    </div>
-                    <div className="card-industrial p-5">
-                        <p className="text-[var(--text-muted)] text-xs uppercase tracking-wider mb-1">Duration</p>
-                        <p className="text-[var(--text-primary)] font-medium">{new Date(session.startTime).toLocaleTimeString()}</p>
-                        <p className="text-[var(--text-secondary)] text-sm">to {new Date(session.endTime).toLocaleTimeString()}</p>
-                    </div>
-                    <div className="card-industrial p-5">
-                        <p className="text-[var(--text-muted)] text-xs uppercase tracking-wider mb-1">Attendance</p>
-                        <p className="text-[var(--accent-primary)] font-bold text-2xl">{sortedAttendances.length}</p>
-                        <p className="text-[var(--text-secondary)] text-sm">students signed</p>
-                    </div>
-                </div>
-
-                {/* QR Code and Actions */}
-                <div className="card-industrial p-6 animate-fade-in-up opacity-0 delay-100">
-                    <div className="flex flex-col md:flex-row items-center gap-6">
-                        <div className="flex-shrink-0 bg-white p-2 rounded-lg">
-                            <canvas ref={canvasRef} className="block" />
-                        </div>
-                        <div className="flex-1 text-center md:text-left">
-                            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-2">Share with Students</h2>
-                            <p className="text-[var(--text-secondary)] text-sm mb-4">
-                                Students can scan the QR code or use the link below to sign attendance.
-                            </p>
-                            <div className="flex flex-col sm:flex-row gap-3">
-                                <button
-                                    onClick={handleCopyLink}
-                                    className="px-4 py-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-hover)] text-[var(--bg-primary)] font-medium rounded-[var(--radius-md)] transition shadow-sm hover:shadow-lg hover:shadow-[var(--accent-glow)]"
-                                >
-                                    {copied ? "Copied!" : "Copy Attendance Link"}
-                                </button>
-                                {session.isActive && (
-                                    <button
-                                        onClick={handleEndSession}
-                                        className="px-4 py-2 bg-[var(--error)]/10 hover:bg-[var(--error)]/20 text-[var(--error)] font-medium rounded-[var(--radius-md)] transition border border-[var(--error)]/20"
-                                    >
-                                        End Session
-                                    </button>
-                                )}
+                            <div className="flex items-center gap-2">
+                                <h1 className="text-sm font-bold tracking-tight text-white leading-none">
+                                    {session.course?.courseCode}
+                                </h1>
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${session.isActive
+                                        ? "bg-accent/10 text-accent border border-accent/20"
+                                        : "bg-white/5 text-white/30 border border-white/5"
+                                    }`}>
+                                    {session.isActive ? "Active Monitoring" : "Sync Completed"}
+                                </span>
                             </div>
-                            <p className="text-[var(--text-muted)] text-xs mt-3 font-mono break-all">{shareUrl}</p>
+                            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/20 mt-1">Infrastructure Control</p>
                         </div>
                     </div>
-                </div>
-
-                {/* Attendance Table */}
-                <div className="card-industrial overflow-hidden animate-fade-in-up opacity-0 delay-200">
-                    <div className="px-6 py-4 border-b border-[var(--border-subtle)] flex items-center justify-between">
-                        <h2 className="text-base font-semibold text-[var(--text-primary)]">Attendance List</h2>
-                        <div className="flex gap-2">
-                            <button
-                                onClick={() => { setModalError(null); setAddForm({ matricNumber: "", studentName: "" }); setShowAddModal(true); }}
-                                className="px-3 py-1.5 bg-[var(--accent-primary)] hover:bg-[var(--accent-hover)] text-[var(--bg-primary)] text-sm font-medium rounded-[var(--radius-md)] transition flex items-center gap-2"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                                </svg>
-                                Add Student
-                            </button>
-                            <button
-                                onClick={exportToCSV}
-                                className="px-3 py-1.5 bg-[var(--bg-elevated)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)] text-sm rounded-[var(--radius-md)] transition border border-[var(--border-default)] flex items-center gap-2"
-                            >
-                                Export CSV
-                            </button>
-                        </div>
-                    </div>
-                    {sortedAttendances.length === 0 ? (
-                        <div className="p-12 text-center">
-                            <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-[var(--bg-elevated)] flex items-center justify-center">
-                                <svg className="w-6 h-6 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
-                            </div>
-                            <p className="text-[var(--text-secondary)]">No students have signed yet. Share the QR code or add students manually!</p>
-                        </div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead>
-                                    <tr className="border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)]">
-                                        <th className="text-left px-6 py-3 text-[var(--text-muted)] text-xs uppercase tracking-wider font-medium w-16">#</th>
-                                        <th className="text-left px-6 py-3 text-[var(--text-muted)] text-xs uppercase tracking-wider font-medium">Name</th>
-                                        <th className="text-left px-6 py-3 text-[var(--text-muted)] text-xs uppercase tracking-wider font-medium">Matric No.</th>
-                                        <th className="text-left px-6 py-3 text-[var(--text-muted)] text-xs uppercase tracking-wider font-medium">Signed At</th>
-                                        <th className="text-right px-6 py-3 text-[var(--text-muted)] text-xs uppercase tracking-wider font-medium w-24">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-[var(--border-subtle)]">
-                                    {sortedAttendances.map((a, i) => (
-                                        <tr key={a._id} className="hover:bg-[var(--bg-elevated)] transition-colors">
-                                            <td className="px-6 py-4 text-[var(--text-muted)] text-sm">{i + 1}</td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-[var(--text-primary)] font-medium">{a.studentName}</span>
-                                                    {a.isManualEntry && (
-                                                        <span className="px-1.5 py-0.5 text-[10px] font-medium bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] rounded border border-[var(--accent-primary)]/20">
-                                                            Manual
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 text-[var(--text-secondary)] font-mono text-sm">{a.matricNumber || "—"}</td>
-                                            <td className="px-6 py-4 text-[var(--text-secondary)] text-sm">{new Date(a.signedAt).toLocaleTimeString()}</td>
-                                            <td className="px-6 py-4 text-right">
-                                                <div className="flex items-center justify-end gap-1">
-                                                    <button
-                                                        onClick={() => openEditModal(a)}
-                                                        className="p-1.5 text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] rounded transition"
-                                                        title="Edit"
-                                                    >
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                        </svg>
-                                                    </button>
-                                                    <button
-                                                        onClick={() => openDeleteConfirm(a)}
-                                                        className="p-1.5 text-[var(--text-muted)] hover:text-[var(--error)] hover:bg-[var(--error)]/10 rounded transition"
-                                                        title="Delete"
-                                                    >
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                    {session.isActive && (
+                        <div className="flex items-center gap-3 glass px-4 py-2 rounded-xl border-accent/20">
+                            <Clock className="w-3 h-3 text-accent animate-pulse" />
+                            <span className="text-xs font-mono font-bold text-accent tracking-tighter">{timeLeft}</span>
                         </div>
                     )}
                 </div>
-            </main>
+            </header>
 
-            {/* Add Student Modal */}
-            {showAddModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="card-industrial w-full max-w-md p-6 animate-fade-in-up">
-                        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Add Student Manually</h3>
-                        <form onSubmit={handleAddStudent} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-                                    Matric Number <span className="text-[var(--error)]">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={addForm.matricNumber}
-                                    onChange={(e) => setAddForm({ ...addForm, matricNumber: e.target.value })}
-                                    required
-                                    className="w-full px-4 py-3 bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-[var(--radius-md)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] uppercase font-mono"
-                                    placeholder="CSC/2020/001"
-                                />
+            <main className="relative z-10 max-w-7xl mx-auto px-6 pt-32 pb-20">
+                {/* Stats Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                    {[
+                        { label: "Location", val: session.location?.name, sub: session.location?.building, icon: MapPin, color: "text-blue-500" },
+                        { label: "Active Nodes", val: sortedAttendances.length, sub: "Verified Entities", icon: Users, color: "text-accent" },
+                        { label: "Temporal Window", val: new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), sub: `End: ${new Date(session.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`, icon: Clock, color: "text-purple-500" },
+                        { label: "System Status", val: session.isActive ? "OPERATIONAL" : "ARCHIVED", sub: "Verified Pipeline", icon: ShieldCheck, color: session.isActive ? "text-emerald-500" : "text-white/20" },
+                    ].map((st, i) => (
+                        <motion.div
+                            key={st.label}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.05 }}
+                            className="glass p-6 rounded-3xl hover:bg-white/5 transition-colors group"
+                        >
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="p-2 glass rounded-xl">
+                                    <st.icon className={`w-4 h-4 ${st.color}`} />
+                                </div>
+                                <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/20">{st.label}</h3>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-                                    Student Name <span className="text-[var(--error)]">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={addForm.studentName}
-                                    onChange={(e) => setAddForm({ ...addForm, studentName: e.target.value })}
-                                    required
-                                    className="w-full px-4 py-3 bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-[var(--radius-md)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
-                                    placeholder="John Doe"
-                                />
-                            </div>
-                            {modalError && (
-                                <p className="text-[var(--error)] text-sm">{modalError}</p>
-                            )}
-                            <div className="flex gap-3 pt-2">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowAddModal(false)}
-                                    className="flex-1 px-4 py-2.5 bg-[var(--bg-elevated)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)] font-medium rounded-[var(--radius-md)] transition border border-[var(--border-default)]"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={isSubmitting}
-                                    className="flex-1 px-4 py-2.5 bg-[var(--accent-primary)] hover:bg-[var(--accent-hover)] text-[var(--bg-primary)] font-medium rounded-[var(--radius-md)] transition disabled:opacity-50"
-                                >
-                                    {isSubmitting ? "Adding..." : "Add Student"}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                            <p className="text-xl font-bold text-white tracking-tight">{st.val}</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-white/20 mt-1">{st.sub}</p>
+                        </motion.div>
+                    ))}
                 </div>
-            )}
 
-            {/* Edit Student Modal */}
-            {showEditModal && selectedAttendance && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="card-industrial w-full max-w-md p-6 animate-fade-in-up">
-                        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Edit Student</h3>
-                        <form onSubmit={handleEditStudent} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-                                    Matric Number <span className="text-[var(--error)]">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={editForm.matricNumber}
-                                    onChange={(e) => setEditForm({ ...editForm, matricNumber: e.target.value })}
-                                    required
-                                    className="w-full px-4 py-3 bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-[var(--radius-md)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] uppercase font-mono"
-                                />
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Left Panel: Primary Actions & QR */}
+                    <div className="lg:col-span-1 space-y-6">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="glass p-8 rounded-[3rem] border-white/5 flex flex-col items-center text-center relative overflow-hidden group"
+                        >
+                            <div className="absolute inset-0 bg-accent/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                            <div className="w-16 h-16 rounded-[1.5rem] glass flex items-center justify-center mb-6 relative">
+                                <QrCode className="w-8 h-8 text-accent opacity-50" />
+                                <div className="absolute inset-0 bg-accent/20 blur-2xl rounded-full" />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-                                    Student Name <span className="text-[var(--error)]">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={editForm.studentName}
-                                    onChange={(e) => setEditForm({ ...editForm, studentName: e.target.value })}
-                                    required
-                                    className="w-full px-4 py-3 bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-[var(--radius-md)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
-                                />
-                            </div>
-                            {modalError && (
-                                <p className="text-[var(--error)] text-sm">{modalError}</p>
-                            )}
-                            <div className="flex gap-3 pt-2">
-                                <button
-                                    type="button"
-                                    onClick={() => { setShowEditModal(false); setSelectedAttendance(null); }}
-                                    className="flex-1 px-4 py-2.5 bg-[var(--bg-elevated)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)] font-medium rounded-[var(--radius-md)] transition border border-[var(--border-default)]"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={isSubmitting}
-                                    className="flex-1 px-4 py-2.5 bg-[var(--accent-primary)] hover:bg-[var(--accent-hover)] text-[var(--bg-primary)] font-medium rounded-[var(--radius-md)] transition disabled:opacity-50"
-                                >
-                                    {isSubmitting ? "Saving..." : "Save Changes"}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
 
-            {/* Delete Confirmation Modal */}
-            {showDeleteConfirm && selectedAttendance && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="card-industrial w-full max-w-sm p-6 animate-fade-in-up">
-                        <div className="text-center">
-                            <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-[var(--error)]/10 flex items-center justify-center">
-                                <svg className="w-6 h-6 text-[var(--error)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
+                            <h2 className="text-2xl font-bold text-white tracking-tighter mb-2">Access Portal.</h2>
+                            <p className="text-white/40 text-xs font-light mb-8 max-w-[200px]">Deploy this visual key to authorized entities for verification.</p>
+
+                            <div className="glass p-4 rounded-3xl mb-8 border-white/10 bg-white/[0.02]">
+                                <canvas ref={canvasRef} className="block w-full max-w-[200px]" />
                             </div>
-                            <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">Delete Attendance?</h3>
-                            <p className="text-[var(--text-secondary)] text-sm mb-4">
-                                Are you sure you want to remove <strong>{selectedAttendance.studentName}</strong> from the attendance list? This action cannot be undone.
+
+                            <div className="w-full space-y-3">
+                                <Button
+                                    variant={copied ? "glass" : "primary"}
+                                    onClick={handleCopyLink}
+                                    className="w-full rounded-2xl h-14"
+                                >
+                                    {copied ? (
+                                        <span className="flex items-center gap-2"><Check className="w-4 h-4" /> Copied</span>
+                                    ) : (
+                                        <span className="flex items-center gap-2"><Copy className="w-4 h-4" /> Copy Link</span>
+                                    )}
+                                </Button>
+                                {session.isActive && (
+                                    <Button
+                                        variant="ghost"
+                                        onClick={handleEndSession}
+                                        className="w-full text-[10px] font-bold uppercase tracking-[0.2em] text-destructive hover:bg-destructive/10"
+                                    >
+                                        Deactivate Infrastructure
+                                    </Button>
+                                )}
+                            </div>
+                            <p className="text-[10px] font-mono text-white/10 mt-6 break-all max-w-full px-4 overflow-hidden text-ellipsis whitespace-nowrap">
+                                {shareUrl}
                             </p>
-                            {modalError && (
-                                <p className="text-[var(--error)] text-sm mb-4">{modalError}</p>
-                            )}
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={() => { setShowDeleteConfirm(false); setSelectedAttendance(null); }}
-                                    className="flex-1 px-4 py-2.5 bg-[var(--bg-elevated)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)] font-medium rounded-[var(--radius-md)] transition border border-[var(--border-default)]"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleDeleteStudent}
-                                    disabled={isSubmitting}
-                                    className="flex-1 px-4 py-2.5 bg-[var(--error)] hover:bg-[var(--error)]/90 text-white font-medium rounded-[var(--radius-md)] transition disabled:opacity-50"
-                                >
-                                    {isSubmitting ? "Deleting..." : "Delete"}
-                                </button>
+                        </motion.div>
+                    </div>
+
+                    {/* Right Panel: Data Stream */}
+                    <div className="lg:col-span-2 space-y-6">
+                        <div className="glass rounded-[3rem] border-white/5 overflow-hidden flex flex-col min-h-[500px]">
+                            <div className="px-8 py-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                                    <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-white/50">Verification Stream</h2>
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="glass"
+                                        size="sm"
+                                        className="rounded-xl px-4 text-[10px] font-bold uppercase tracking-widest h-9"
+                                        onClick={() => { setModalError(null); setAddForm({ matricNumber: "", studentName: "" }); setShowAddModal(true); }}
+                                    >
+                                        <Plus className="w-3 h-3 mr-2" /> Manual Bypass
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="rounded-xl px-4 text-[10px] font-bold uppercase tracking-widest text-white/40 h-9"
+                                        onClick={exportToCSV}
+                                    >
+                                        <Download className="w-3 h-3 mr-2" /> Data Export
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <div className="flex-1 p-2">
+                                {sortedAttendances.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center h-full py-20">
+                                        <Zap className="w-12 h-12 text-white/5 mb-6" />
+                                        <p className="text-sm font-bold tracking-[0.2em] text-white/10 uppercase">Awaiting Data Entry...</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-1">
+                                        {sortedAttendances.map((a, i) => (
+                                            <motion.div
+                                                key={a._id}
+                                                initial={{ opacity: 0, x: -10 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                className="p-4 flex items-center justify-between hover:bg-white/[0.03] transition-colors rounded-2xl group"
+                                            >
+                                                <div className="flex items-center gap-5">
+                                                    <div className="w-10 h-10 rounded-xl glass border-white/5 flex items-center justify-center text-[10px] font-bold text-white/20">
+                                                        {i + 1}
+                                                    </div>
+                                                    <div>
+                                                        <div className="flex items-center gap-3">
+                                                            <h3 className="text-sm font-bold text-white tracking-tight">{a.studentName}</h3>
+                                                            {a.isManualEntry && (
+                                                                <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-full">
+                                                                    Manual
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-[10px] font-mono font-bold text-white/30 uppercase tracking-widest mt-0.5">
+                                                            {a.matricNumber}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-6">
+                                                    <div className="text-right">
+                                                        <p className="text-xs font-mono font-bold text-white/40">
+                                                            {new Date(a.signedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                                        </p>
+                                                        <p className="text-[9px] font-bold uppercase tracking-widest text-white/10">Timestamp</p>
+                                                    </div>
+                                                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <button
+                                                            onClick={() => openEditModal(a)}
+                                                            className="p-2 glass rounded-lg hover:text-accent transition-colors"
+                                                        >
+                                                            <Edit3 className="w-3 h-3" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => openDeleteConfirm(a)}
+                                                            className="p-2 glass rounded-lg hover:text-destructive transition-colors"
+                                                        >
+                                                            <Trash2 className="w-3 h-3" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
                 </div>
-            )}
+            </main>
+
+            {/* Modals - Standardized Antigravity Glass Modals */}
+            <AnimatePresence>
+                {(showAddModal || showEditModal || showDeleteConfirm) && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            className="glass p-10 rounded-[3rem] border-white/10 max-w-md w-full relative shadow-3xl"
+                        >
+                            <button
+                                onClick={() => { setShowAddModal(false); setShowEditModal(false); setShowDeleteConfirm(false); }}
+                                className="absolute top-8 right-8 text-white/30 hover:text-white transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+
+                            {(showAddModal || showEditModal) && (
+                                <div>
+                                    <h3 className="text-2xl font-bold text-white tracking-tighter mb-2">
+                                        {showAddModal ? "Manual Provisioning" : "Identify Modulation"}
+                                    </h3>
+                                    <p className="text-white/30 text-xs font-light mb-8">
+                                        Enter student metrics to authenticate record.
+                                    </p>
+                                    <form onSubmit={showAddModal ? handleAddStudent : handleEditStudent} className="space-y-6">
+                                        <Input
+                                            label="Entity Identifier (Matric)"
+                                            placeholder="ID-V2-000000"
+                                            value={showAddModal ? addForm.matricNumber : editForm.matricNumber}
+                                            onChange={(e) => showAddModal
+                                                ? setAddForm({ ...addForm, matricNumber: e.target.value })
+                                                : setEditForm({ ...editForm, matricNumber: e.target.value })
+                                            }
+                                            required
+                                            className="uppercase"
+                                        />
+                                        <Input
+                                            label="Legal Identity (Name)"
+                                            placeholder="Operator Name"
+                                            value={showAddModal ? addForm.studentName : editForm.studentName}
+                                            onChange={(e) => showAddModal
+                                                ? setAddForm({ ...addForm, studentName: e.target.value })
+                                                : setEditForm({ ...editForm, studentName: e.target.value })
+                                            }
+                                            required
+                                        />
+                                        {modalError && <p className="text-destructive text-[10px] font-bold uppercase tracking-widest">{modalError}</p>}
+                                        <Button type="submit" className="w-full h-14 rounded-2xl" isLoading={isSubmitting}>
+                                            {showAddModal ? "Commit Record" : "Apply Modulation"}
+                                        </Button>
+                                    </form>
+                                </div>
+                            )}
+
+                            {showDeleteConfirm && (
+                                <div className="text-center">
+                                    <div className="w-16 h-16 mx-auto mb-6 rounded-2xl glass flex items-center justify-center">
+                                        <Trash2 className="w-8 h-8 text-destructive opacity-50" />
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-white tracking-tighter mb-2 text-glow-red">Sever Connection?</h3>
+                                    <p className="text-white/40 text-xs font-light mb-8 leading-relaxed">
+                                        Are you sure you want to permanently remove <span className="text-white font-bold">{selectedAttendance?.studentName}</span> from this session pipeline?
+                                    </p>
+                                    {modalError && <p className="text-destructive text-[10px] font-bold uppercase tracking-widest mb-4">{modalError}</p>}
+                                    <div className="flex gap-4">
+                                        <Button variant="glass" className="flex-1 rounded-2xl h-14" onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
+                                        <Button
+                                            variant="primary"
+                                            className="flex-1 rounded-2xl h-14 bg-destructive hover:bg-destructive/90 text-white"
+                                            onClick={handleDeleteStudent}
+                                            isLoading={isSubmitting}
+                                        >
+                                            Sever
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
@@ -563,21 +490,12 @@ function RedirectToLogin() {
     return null;
 }
 
-export default function SessionDetailPage({
-    params,
-}: {
-    params: Promise<{ id: string }>;
-}) {
+export default function SessionDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
-
     return (
         <>
-            <Authenticated>
-                <SessionContent sessionId={id as Id<"attendanceSessions">} />
-            </Authenticated>
-            <Unauthenticated>
-                <RedirectToLogin />
-            </Unauthenticated>
+            <Authenticated><SessionContent sessionId={id as Id<"attendanceSessions">} /></Authenticated>
+            <Unauthenticated><RedirectToLogin /></Unauthenticated>
         </>
     );
 }
