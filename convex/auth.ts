@@ -1,6 +1,22 @@
+import { generateKeyPairSync } from "node:crypto";
 import { Password } from "@convex-dev/auth/providers/Password";
 import { convexAuth } from "@convex-dev/auth/server";
 import { DataModel } from "./_generated/dataModel";
+
+function ensureJwtPrivateKeyForDev() {
+  if (process.env.JWT_PRIVATE_KEY) {
+    return;
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    return;
+  }
+
+  const { privateKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
+  process.env.JWT_PRIVATE_KEY = privateKey.export({ type: "pkcs8", format: "pem" }).toString();
+}
+
+ensureJwtPrivateKeyForDev();
 
 function getStringParam(params: Record<string, unknown>, key: string) {
   const value = params[key];
