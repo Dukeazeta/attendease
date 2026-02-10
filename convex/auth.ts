@@ -2,12 +2,53 @@ import { Password } from "@convex-dev/auth/providers/Password";
 import { convexAuth } from "@convex-dev/auth/server";
 import { DataModel } from "./_generated/dataModel";
 
+function getStringParam(params: Record<string, unknown>, key: string) {
+  const value = params[key];
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : undefined;
+  }
+  return undefined;
+}
+
 const CustomPassword = Password<DataModel>({
   profile(params) {
+    const flow = getStringParam(params as Record<string, unknown>, "flow");
+    const email = getStringParam(params as Record<string, unknown>, "email")?.toLowerCase();
+
+    if (!email) {
+      throw new Error("Email is required.");
+    }
+
+    if (flow === "signUp") {
+      const name = getStringParam(params as Record<string, unknown>, "name");
+      const matricNumber = getStringParam(
+        params as Record<string, unknown>,
+        "matricNumber"
+      );
+
+      if (!name) {
+        throw new Error("Name is required for sign up.");
+      }
+
+      if (!matricNumber) {
+        throw new Error("Matric number is required for sign up.");
+      }
+
+      return {
+        email,
+        name,
+        matricNumber,
+      };
+    }
+
     return {
-      email: params.email as string,
-      name: params.name as string | undefined,
-      matricNumber: params.matricNumber as string | undefined,
+      email,
+      name: getStringParam(params as Record<string, unknown>, "name"),
+      matricNumber: getStringParam(
+        params as Record<string, unknown>,
+        "matricNumber"
+      ),
     };
   },
 });
