@@ -9,11 +9,7 @@ function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-<<<<<<< HEAD
-export interface ButtonProps extends HTMLMotionProps<"button"> {
-=======
 export interface ButtonProps extends Omit<HTMLMotionProps<"button">, "children"> {
->>>>>>> 6e853762c01ab84176b6680c26d720442b2c8136
     variant?: "primary" | "secondary" | "outline" | "ghost" | "link";
     size?: "default" | "sm" | "lg" | "icon";
     isLoading?: boolean;
