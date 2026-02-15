@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { courses, attendanceSessions, attendances } from "@/db/schema";
+import { courses, attendanceSessions } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { nanoid } from "nanoid";
@@ -17,7 +17,7 @@ export async function listCourses() {
 
     // Get session counts
     const enriched = await Promise.all(
-        userCourses.map(async (c: any) => {
+        userCourses.map(async (c: (typeof userCourses)[number]) => {
             const courseSessions = await db.query.attendanceSessions.findMany({
                 where: eq(attendanceSessions.courseId, c.id),
             });

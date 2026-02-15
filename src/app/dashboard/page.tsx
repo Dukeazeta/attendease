@@ -11,14 +11,18 @@ import { listCourses } from "@/app/actions/courses";
 import { listLocations } from "@/app/actions/locations";
 import { listSessions } from "@/app/actions/sessions";
 
+type CourseItem = Awaited<ReturnType<typeof listCourses>>[number];
+type LocationItem = Awaited<ReturnType<typeof listLocations>>[number];
+type SessionItem = Awaited<ReturnType<typeof listSessions>>[number];
+
 export default function DashboardPage() {
     const router = useRouter();
     const { data: session, status } = useSession();
     const [signOutError, setSignOutError] = useState<string | null>(null);
 
-    const [courses, setCourses] = useState<any[]>([]);
-    const [locations, setLocations] = useState<any[]>([]);
-    const [sessions, setSessions] = useState<any[]>([]);
+    const [courses, setCourses] = useState<CourseItem[]>([]);
+    const [locations, setLocations] = useState<LocationItem[]>([]);
+    const [sessions, setSessions] = useState<SessionItem[]>([]);
     const [isLoadingData, setIsLoadingData] = useState(true);
 
     useEffect(() => {

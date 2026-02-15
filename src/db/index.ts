@@ -14,4 +14,15 @@ const client = (!isEdge || !isFileScheme)
     })
     : null;
 
-export const db = client ? drizzle(client, { schema }) : {} as any;
+type Database = ReturnType<typeof drizzle<typeof schema>>;
+
+const fallbackDb = new Proxy(
+    {},
+    {
+        get() {
+            throw new Error("Database is not available in this runtime.");
+        },
+    }
+) as Database;
+
+export const db: Database = client ? drizzle(client, { schema }) : fallbackDb;

@@ -1,8 +1,8 @@
 "use server";
 
 import { db } from "@/db";
-import { attendanceSessions, courses, locations, attendances, users } from "@/db/schema";
-import { eq, and, desc, inArray } from "drizzle-orm";
+import { attendanceSessions, courses, attendances } from "@/db/schema";
+import { eq, desc, inArray } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { nanoid } from "nanoid";
 import { revalidatePath } from "next/cache";
@@ -27,7 +27,7 @@ export async function listSessions() {
 
     if (userCourses.length === 0) return [];
 
-    const courseIds = userCourses.map((c: any) => c.id);
+    const courseIds = userCourses.map((c: (typeof userCourses)[number]) => c.id);
     const sessions = await db.query.attendanceSessions.findMany({
         where: inArray(attendanceSessions.courseId, courseIds),
         with: {
@@ -39,7 +39,7 @@ export async function listSessions() {
 
     // Manually count attendances for each session
     const enriched = await Promise.all(
-        sessions.map(async (s: any) => {
+        sessions.map(async (s: (typeof sessions)[number]) => {
             const records = await db.query.attendances.findMany({
                 where: eq(attendances.sessionId, s.id),
             });
@@ -54,6 +54,9 @@ export async function listSessions() {
 }
 
 export async function getSession(id: string) {
+    const sessionUser = await auth();
+    if (!sessionUser?.user?.id) return null;
+
     const session = await db.query.attendanceSessions.findFirst({
         where: eq(attendanceSessions.id, id),
         with: {
@@ -64,12 +67,16 @@ export async function getSession(id: string) {
     });
 
     if (!session) return null;
+    if (session.course.repId !== sessionUser.user.id) return null;
+
+    const normalizedAttendances = session.attendances
+        .map((a: (typeof session.attendances)[number]) => ({ ...a, signedAt: a.signedAt.getTime() }));
 
     return {
         ...session,
-        attendances: session.attendances
-            .map((a: any) => ({ ...a, signedAt: a.signedAt.getTime() }))
-            .sort((a: any, b: any) => a.studentName.localeCompare(b.studentName)),
+        attendances: normalizedAttendances.sort((a: (typeof normalizedAttendances)[number], b: (typeof normalizedAttendances)[number]) =>
+            a.studentName.localeCompare(b.studentName)
+        ),
     };
 }
 

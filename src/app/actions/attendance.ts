@@ -30,14 +30,30 @@ function calculateDistance(
 
 // List attendances for a session
 export async function listAttendancesBySession(sessionId: string) {
+    const sessionUser = await auth();
+    if (!sessionUser?.user?.id) return [];
+
+    const session = await db.query.attendanceSessions.findFirst({
+        where: eq(attendanceSessions.id, sessionId),
+    });
+    if (!session) return [];
+
+    const course = await db.query.courses.findFirst({
+        where: eq(courses.id, session.courseId),
+    });
+    if (!course || course.repId !== sessionUser.user.id) return [];
+
     const records = await db.query.attendances.findMany({
         where: eq(attendances.sessionId, sessionId),
         orderBy: [desc(attendances.signedAt)],
     });
 
-    return records
-        .map((a: any) => ({ ...a, signedAt: a.signedAt.getTime() }))
-        .sort((a: any, b: any) => a.studentName.localeCompare(b.studentName));
+    const normalizedRecords = records
+        .map((a: (typeof records)[number]) => ({ ...a, signedAt: a.signedAt.getTime() }));
+
+    return normalizedRecords.sort((a: (typeof normalizedRecords)[number], b: (typeof normalizedRecords)[number]) =>
+        a.studentName.localeCompare(b.studentName)
+    );
 }
 
 // Submit attendance (students)

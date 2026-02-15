@@ -5,10 +5,22 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, BookOpen, MapPin, Clock, Activity, Layers } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { listCourses } from "@/app/actions/courses";
 import { listLocations } from "@/app/actions/locations";
 import { createSession } from "@/app/actions/sessions";
+
+type CourseItem = Awaited<ReturnType<typeof listCourses>>[number];
+type LocationItem = Awaited<ReturnType<typeof listLocations>>[number];
+
+type EmptyStateProps = {
+    title: string;
+    description: string;
+    href: string;
+    actionLabel: string;
+    icon: LucideIcon;
+};
 
 export default function NewSessionPage() {
     const router = useRouter();
@@ -16,8 +28,8 @@ export default function NewSessionPage() {
     const [isCreating, setIsCreating] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const [courses, setCourses] = useState<any[]>([]);
-    const [locations, setLocations] = useState<any[]>([]);
+    const [courses, setCourses] = useState<CourseItem[]>([]);
+    const [locations, setLocations] = useState<LocationItem[]>([]);
 
     useEffect(() => {
         async function fetchData() {
@@ -63,7 +75,7 @@ export default function NewSessionPage() {
         );
     }
 
-    const EmptyState = ({ title, description, href, actionLabel, icon: Icon }: any) => (
+    const EmptyState = ({ title, description, href, actionLabel, icon: Icon }: EmptyStateProps) => (
         <div className="min-h-screen bg-surface flex items-center justify-center p-6 text-center">
             <motion.div
                 initial={{ opacity: 0, scale: 0.96 }}
@@ -151,7 +163,7 @@ export default function NewSessionPage() {
                                             className="w-full h-12 rounded-full border border-border bg-background px-5 text-[15px] text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/50 appearance-none cursor-pointer transition-all"
                                         >
                                             <option value="">Select course...</option>
-                                            {courses.map((course: any) => (
+                                            {courses.map((course) => (
                                                 <option key={course.id} value={course.id}>
                                                     {course.courseCode} — {course.courseTitle}
                                                 </option>
@@ -173,7 +185,7 @@ export default function NewSessionPage() {
                                             className="w-full h-12 rounded-full border border-border bg-background px-5 text-[15px] text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/50 appearance-none cursor-pointer transition-all"
                                         >
                                             <option value="">Select location...</option>
-                                            {locations.map((location: any) => (
+                                            {locations.map((location) => (
                                                 <option key={location.id} value={location.id}>
                                                     {location.name} {location.building && `(${location.building})`}
                                                 </option>

@@ -8,8 +8,10 @@ import { ArrowLeft, BookOpen, Plus, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { listCourses, createCourse, removeCourse } from "@/app/actions/courses";
 
+type CourseItem = Awaited<ReturnType<typeof listCourses>>[number];
+
 export default function CoursesPage() {
-    const [courses, setCourses] = useState<any[]>([]);
+    const [courses, setCourses] = useState<CourseItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -130,7 +132,7 @@ export default function CoursesPage() {
                         </div>
                     ) : (
                         <div className="divide-y divide-border">
-                            {courses.map((course: any) => (
+                            {courses.map((course) => (
                                 <div key={course.id} className="px-6 py-4 flex items-center justify-between hover:bg-surface-container/50 transition-colors">
                                     <div>
                                         <h3 className="text-[14.5px] font-[450] text-foreground">{course.courseCode}</h3>

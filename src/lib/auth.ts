@@ -6,6 +6,7 @@ import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { authConfig } from "./auth.config";
+import { hashPassword, verifyPassword } from "./password";
 
 const isEdge = process.env.NEXT_RUNTIME === "edge";
 
@@ -26,14 +27,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 if (!credentials?.email) return null;
 
                 const email = (credentials.email as string).toLowerCase();
+                const password = credentials.password as string | undefined;
                 const flow = credentials.flow as string;
+
+                if (!password) return null;
 
                 if (flow === "signUp") {
                     const name = credentials.name as string;
                     const matricNumber = credentials.matricNumber as string;
 
                     if (!name || !matricNumber) {
-                        throw new Error("Name and Matric Number are required for sign up.");
+                        return null;
                     }
 
                     const existingUser = await db.query.users.findFirst({
@@ -41,7 +45,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                     });
 
                     if (existingUser) {
-                        throw new Error("User with this email already exists.");
+                        return null;
                     }
 
                     const newUser = {
@@ -49,6 +53,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                         email,
                         name,
                         matricNumber,
+                        passwordHash: hashPassword(password),
                     };
 
                     await db.insert(users).values(newUser);
@@ -60,7 +65,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 });
 
                 if (!user) {
-                    throw new Error("User not found.");
+                    return null;
+                }
+
+                if (!user.passwordHash) {
+                    return null;
+                }
+
+                const isValidPassword = verifyPassword(password, user.passwordHash);
+                if (!isValidPassword) {
+                    return null;
                 }
 
                 return user;
@@ -81,7 +95,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                     });
 
                     if (dbUser) {
-                        (session.user as any).matricNumber = dbUser.matricNumber;
+                        const mutableUser = session.user as typeof session.user & { matricNumber?: string | null };
+                        mutableUser.matricNumber = dbUser.matricNumber;
                     }
                 } catch (e) {
                     console.error("Session callback DB error:", e);

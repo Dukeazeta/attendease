@@ -8,8 +8,10 @@ import { ArrowLeft, MapPin, Crosshair, Trash2, Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { listLocations, createLocation, removeLocation } from "@/app/actions/locations";
 
+type LocationItem = Awaited<ReturnType<typeof listLocations>>[number];
+
 export default function LocationsPage() {
-    const [locations, setLocations] = useState<any[]>([]);
+    const [locations, setLocations] = useState<LocationItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isGettingLocation, setIsGettingLocation] = useState(false);
     const [currentCoords, setCurrentCoords] = useState<{ lat: number; lng: number } | null>(null);
@@ -147,7 +149,10 @@ export default function LocationsPage() {
                                 step="any"
                                 required
                                 value={currentCoords?.lat || ""}
-                                onChange={(e) => setCurrentCoords((prev) => ({ ...prev!, lat: parseFloat(e.target.value) }))}
+                                onChange={(e) => {
+                                    const lat = parseFloat(e.target.value);
+                                    setCurrentCoords((prev) => ({ lat, lng: prev?.lng ?? 0 }));
+                                }}
                             />
                             <Input
                                 type="number"
@@ -156,7 +161,10 @@ export default function LocationsPage() {
                                 step="any"
                                 required
                                 value={currentCoords?.lng || ""}
-                                onChange={(e) => setCurrentCoords((prev) => ({ ...prev!, lng: parseFloat(e.target.value) }))}
+                                onChange={(e) => {
+                                    const lng = parseFloat(e.target.value);
+                                    setCurrentCoords((prev) => ({ lat: prev?.lat ?? 0, lng }));
+                                }}
                             />
                             <Input
                                 type="number"

@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-    ArrowLeft, Activity, MapPin, Clock, Users,
+    ArrowLeft, MapPin, Clock, Users,
     QrCode, Copy, Check, Download,
     Plus, Edit3, Trash2, X, ShieldCheck
 } from "lucide-react";
@@ -22,6 +22,8 @@ interface Attendance {
     signedAt: number;
     isManualEntry: boolean;
 }
+
+type SessionRecord = NonNullable<Awaited<ReturnType<typeof getSession>>>;
 
 function SessionContent({ sessionId }: { sessionId: string }) {
     const router = useRouter();
@@ -40,7 +42,7 @@ function SessionContent({ sessionId }: { sessionId: string }) {
     const [addForm, setAddForm] = useState({ matricNumber: "", studentName: "" });
     const [editForm, setEditForm] = useState({ matricNumber: "", studentName: "" });
 
-    const [session, setSession] = useState<any>(null);
+    const [session, setSession] = useState<SessionRecord | null>(null);
     const [attendances, setAttendances] = useState<Attendance[]>([]);
 
     useEffect(() => {
@@ -55,7 +57,7 @@ function SessionContent({ sessionId }: { sessionId: string }) {
                     return;
                 }
                 setSession(s);
-                setAttendances(a as Attendance[]);
+                setAttendances(a);
             } catch (err) {
                 console.error("Failed to fetch session data:", err);
             } finally {
@@ -140,7 +142,7 @@ function SessionContent({ sessionId }: { sessionId: string }) {
         try {
             await addManualAttendance({ sessionId, matricNumber: addForm.matricNumber, studentName: addForm.studentName });
             const updatedAttendances = await listAttendancesBySession(sessionId);
-            setAttendances(updatedAttendances as Attendance[]);
+            setAttendances(updatedAttendances);
             setShowAddModal(false);
             setAddForm({ matricNumber: "", studentName: "" });
         } catch (err) {
@@ -156,7 +158,7 @@ function SessionContent({ sessionId }: { sessionId: string }) {
         try {
             await updateAttendance({ id: selectedAttendance.id, matricNumber: editForm.matricNumber, studentName: editForm.studentName });
             const updatedAttendances = await listAttendancesBySession(sessionId);
-            setAttendances(updatedAttendances as Attendance[]);
+            setAttendances(updatedAttendances);
             setShowEditModal(false);
             setSelectedAttendance(null);
             setEditForm({ matricNumber: "", studentName: "" });
@@ -172,7 +174,7 @@ function SessionContent({ sessionId }: { sessionId: string }) {
         try {
             await removeAttendance(selectedAttendance.id);
             const updatedAttendances = await listAttendancesBySession(sessionId);
-            setAttendances(updatedAttendances as Attendance[]);
+            setAttendances(updatedAttendances);
             setShowDeleteConfirm(false);
             setSelectedAttendance(null);
         } catch (err) {

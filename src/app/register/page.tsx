@@ -43,7 +43,11 @@ export default function RegisterPage() {
             });
 
             if (result?.error) {
-                setError(result.error);
+                if (result.error === "CredentialsSignin") {
+                    setError("Registration failed. Check your details or use a different email.");
+                } else {
+                    setError(result.error);
+                }
             } else {
                 router.replace("/dashboard");
             }

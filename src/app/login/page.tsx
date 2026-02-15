@@ -32,7 +32,11 @@ export default function LoginPage() {
             });
 
             if (result?.error) {
-                setError(result.error);
+                if (result.error === "CredentialsSignin") {
+                    setError("Invalid credentials. If your account is older, use 'Set your password'.");
+                } else {
+                    setError(result.error);
+                }
             } else {
                 router.replace("/dashboard");
             }
@@ -105,6 +109,12 @@ export default function LoginPage() {
                                 Don&apos;t have an account?{" "}
                                 <Link href="/register" className="text-accent hover:text-accent/80 font-[450] transition-colors">
                                     Sign Up
+                                </Link>
+                            </p>
+                            <p className="text-[13px] text-muted-foreground mt-2">
+                                Legacy account?{" "}
+                                <Link href="/bootstrap-password" className="text-accent hover:text-accent/80 font-[450] transition-colors">
+                                    Set your password
                                 </Link>
                             </p>
                         </div>

@@ -4,10 +4,21 @@ import { useState, useEffect, use } from "react";
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MapPin, CheckCircle2, XCircle, Loader2, Shield } from "lucide-react";
+import { MapPin, CheckCircle2, XCircle, Shield } from "lucide-react";
 import { motion } from "framer-motion";
 import { getSessionByShareCode } from "@/app/actions/sessions";
 import { submitAttendance } from "@/app/actions/attendance";
+
+type ShareSession = Awaited<ReturnType<typeof getSessionByShareCode>>;
+
+function getFingerprintComponentValue(components: unknown, key: string): unknown {
+    if (!components || typeof components !== "object") {
+        return undefined;
+    }
+
+    const component = (components as Record<string, { value?: unknown }>)[key];
+    return component?.value;
+}
 
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
     const R = 6371e3;
@@ -27,7 +38,7 @@ function AttendContent({ shareCode }: { shareCode: string }) {
     const [distance, setDistance] = useState<number | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [deviceFingerprint, setDeviceFingerprint] = useState<string | null>(null);
-    const [session, setSession] = useState<any>(null);
+    const [session, setSession] = useState<ShareSession>(null);
     const [isLoadingSession, setIsLoadingSession] = useState(true);
 
     async function generateHardwareFingerprint(): Promise<string> {
@@ -43,9 +54,9 @@ function AttendContent({ shareCode }: { shareCode: string }) {
             // we can combine it with a few high-entropy but stable signals
             const components = result.components;
             const extraSignals = {
-                vendor: "vendor" in components ? (components.vendor as any).value : "",
-                renderer: "webGlRenderer" in components ? (components.webGlRenderer as any).value : "",
-                languages: "languages" in components ? (components.languages as any).value : [],
+                vendor: getFingerprintComponentValue(components, "vendor") ?? "",
+                renderer: getFingerprintComponentValue(components, "webGlRenderer") ?? "",
+                languages: getFingerprintComponentValue(components, "languages") ?? [],
             };
 
             const salt = "attendease_v2_stable";

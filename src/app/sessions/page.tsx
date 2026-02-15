@@ -7,8 +7,10 @@ import { ArrowLeft, History, Plus, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { listSessions } from "@/app/actions/sessions";
 
+type SessionItem = Awaited<ReturnType<typeof listSessions>>[number];
+
 export default function SessionsHistoryPage() {
-    const [sessions, setSessions] = useState<any[]>([]);
+    const [sessions, setSessions] = useState<SessionItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -73,7 +75,7 @@ export default function SessionsHistoryPage() {
                         </div>
                     ) : (
                         <div className="divide-y divide-border">
-                            {sessions.map((s: any) => (
+                            {sessions.map((s) => (
                                 <Link
                                     key={s.id}
                                     href={`/sessions/${s.id}`}
