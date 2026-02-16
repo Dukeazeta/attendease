@@ -7,6 +7,15 @@ import { auth } from "@/lib/auth";
 import { nanoid } from "nanoid";
 import { revalidatePath } from "next/cache";
 
+function isUniqueConstraintError(err: unknown, indexName: string): boolean {
+    if (!err || typeof err !== "object") return false;
+
+    const maybeMessage = (err as { message?: unknown }).message;
+    if (typeof maybeMessage !== "string") return false;
+
+    return maybeMessage.includes("SQLITE_CONSTRAINT") && maybeMessage.includes(indexName);
+}
+
 // Haversine formula to calculate distance between two points in meters
 function calculateDistance(
     lat1: number,
@@ -115,17 +124,29 @@ export async function submitAttendance(args: {
         }
 
         const id = nanoid();
-        await db.insert(attendances).values({
-            id,
-            sessionId: args.sessionId,
-            matricNumber: matricUpper,
-            studentName: args.studentName,
-            signedLatitude: args.latitude,
-            signedLongitude: args.longitude,
-            deviceFingerprint: args.deviceFingerprint,
-            isManualEntry: false,
-            signedAt: new Date(),
-        });
+        try {
+            await db.insert(attendances).values({
+                id,
+                sessionId: args.sessionId,
+                matricNumber: matricUpper,
+                studentName: args.studentName,
+                signedLatitude: args.latitude,
+                signedLongitude: args.longitude,
+                deviceFingerprint: args.deviceFingerprint,
+                isManualEntry: false,
+                signedAt: new Date(),
+            });
+        } catch (err) {
+            if (isUniqueConstraintError(err, "attendances_session_matric_unique")) {
+                return { error: "You have already signed attendance" };
+            }
+
+            if (isUniqueConstraintError(err, "attendances_session_device_unique")) {
+                return { error: "This device has already been used for this session." };
+            }
+
+            throw err;
+        }
 
         revalidatePath(`/sessions/${args.sessionId}`);
         return { success: true, id };
@@ -164,17 +185,25 @@ export async function addManualAttendance(args: {
     if (existing) throw new Error("This student has already signed");
 
     const id = nanoid();
-    await db.insert(attendances).values({
-        id,
-        sessionId: args.sessionId,
-        matricNumber: matricUpper,
-        studentName: args.studentName,
-        signedLatitude: 0,
-        signedLongitude: 0,
-        deviceFingerprint: `manual_${Date.now()}_${nanoid()}`,
-        isManualEntry: true,
-        signedAt: new Date(),
-    });
+    try {
+        await db.insert(attendances).values({
+            id,
+            sessionId: args.sessionId,
+            matricNumber: matricUpper,
+            studentName: args.studentName,
+            signedLatitude: 0,
+            signedLongitude: 0,
+            deviceFingerprint: `manual_${Date.now()}_${nanoid()}`,
+            isManualEntry: true,
+            signedAt: new Date(),
+        });
+    } catch (err) {
+        if (isUniqueConstraintError(err, "attendances_session_matric_unique")) {
+            throw new Error("This student has already signed");
+        }
+
+        throw err;
+    }
 
     revalidatePath(`/sessions/${args.sessionId}`);
     return id;

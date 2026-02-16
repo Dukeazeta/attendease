@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real, primaryKey } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, real, primaryKey, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { sql, relations } from "drizzle-orm";
 
 // Auth Tables (NextAuth)
@@ -113,7 +113,10 @@ export const attendances = sqliteTable("attendances", {
     signedAt: integer("signedAt", { mode: "timestamp_ms" })
         .notNull()
         .default(sql`CURRENT_TIMESTAMP`),
-});
+}, (table) => ({
+    uniqueSessionMatric: uniqueIndex("attendances_session_matric_unique").on(table.sessionId, table.matricNumber),
+    uniqueSessionDevice: uniqueIndex("attendances_session_device_unique").on(table.sessionId, table.deviceFingerprint),
+}));
 
 // RELATIONS
 export const usersRelations = relations(users, ({ many }) => ({
